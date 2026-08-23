@@ -49,8 +49,9 @@ const Home: React.FC<HomeProps> = ({
   onUpdateProfile
 }) => {
   const userProfile = state.profile!;
-  const memorizedVersesCount = state.blocks.reduce((sum, b) => sum + (b.toAyah - b.fromAyah + 1), 0) + (userProfile.previousHifzAyahsCount || 0);
-  const quranCompletionPercent = ((Math.min(memorizedVersesCount, 6236) / 6236) * 100).toFixed(1);
+  const currentBlocksAyahs = state.blocks.reduce((sum, b) => sum + (Math.abs(b.toAyah - b.fromAyah) + 1), 0);
+  const totalMemorizedAyahs = currentBlocksAyahs + (userProfile.previousHifzAyahsCount || 0);
+  const quranCompletionPercent = ((Math.min(totalMemorizedAyahs, 6236) / 6236) * 100).toFixed(1);
   const totalCompletedReviewsCount = Object.values(state.completedReviews).reduce((sum: number, arr) => sum + (arr as string[]).length, 0);
 
   // Time-based Focus logic
@@ -196,7 +197,7 @@ const Home: React.FC<HomeProps> = ({
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-4 text-right">
               <h3 className="text-lg font-serif font-bold text-emerald-900 border-b border-gray-100 pb-3 flex items-center justify-between"><span>📊 الإحصائيات والتقدم العام</span><Activity className="w-5 h-5 text-emerald-600" /></h3>
               <div className="grid grid-cols-2 gap-4 text-center">
-                <div className="bg-gray-50 p-4 rounded-2xl"><p className="text-[10px] text-gray-500">إجمالي الحفظ</p><p className="text-lg font-bold text-emerald-900">{memorizedVersesCount} آية</p></div>
+                <div className="bg-gray-50 p-4 rounded-2xl"><p className="text-[10px] text-gray-500">إجمالي الحفظ</p><p className="text-lg font-bold text-emerald-900">{totalMemorizedAyahs} آية</p></div>
                 <div className="bg-gray-50 p-4 rounded-2xl"><p className="text-[10px] text-gray-500">أيام الاستمرار</p><p className="text-lg font-bold text-amber-600">{userProfile.streakDays} يوم</p></div>
               </div>
             </div>
@@ -253,7 +254,7 @@ const Home: React.FC<HomeProps> = ({
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-4 text-right">
             <h3 className="text-lg font-serif font-bold text-emerald-900 border-b border-gray-100 pb-3 flex items-center justify-between"><span>📊 الإحصائيات والتقدم العام</span><Activity className="w-5 h-5 text-emerald-600" /></h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-              <div className="bg-gray-50 p-4 rounded-2xl"><p className="text-[10px] text-gray-500">إجمالي الحفظ</p><p className="text-lg font-bold text-emerald-900">{memorizedVersesCount} آية</p></div>
+              <div className="bg-gray-50 p-4 rounded-2xl"><p className="text-[10px] text-gray-500">إجمالي الحفظ</p><p className="text-lg font-bold text-emerald-900">{totalMemorizedAyahs} آية</p></div>
               <div className="bg-gray-50 p-4 rounded-2xl"><p className="text-[10px] text-gray-500">نسبة الختمة</p><p className="text-lg font-bold text-emerald-900">{quranCompletionPercent}%</p></div>
               <div className="bg-gray-50 p-4 rounded-2xl"><p className="text-[10px] text-gray-500">المراجعات المكتملة</p><p className="text-lg font-bold text-emerald-900">{totalCompletedReviewsCount}</p></div>
               <div className="bg-gray-50 p-4 rounded-2xl"><p className="text-[10px] text-gray-500">أيام الاستمرار</p><p className="text-lg font-bold text-amber-600">{userProfile.streakDays} يوم</p></div>

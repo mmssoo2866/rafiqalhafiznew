@@ -60,7 +60,7 @@ const Settings: React.FC<SettingsProps> = ({ state, onUpdateState, onExportBacku
     }, "تحديث الحفظ السابق", `تم إدراج المرتقيات بناءً على الحفظ من ${getSurahName(prevFrom)} إلى ${getSurahName(prevTo)} (${totalAyahsInRange} آية)`);
 
     onUpdateState(updated);
-    alert("تم تحديث المرتقيات بنجاح! يمكنك مراجعة الإنجازات في صفحة المراجعة.");
+    alert(`تم تحديث المرتقيات بنجاح! تم احتساب ${totalAyahsInRange} آية في سجل إنجازاتك.`);
   };
 
   return (
