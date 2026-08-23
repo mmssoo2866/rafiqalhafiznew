@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Settings as SettingsIcon, Download, Upload, Trash2 } from "lucide-react";
+import { Settings as SettingsIcon, Download, Upload, Trash2, Award } from "lucide-react";
 import { PageProps } from "../types";
+import { SURAHS, MURTAGAS, getSurahName } from "../quranData";
+import { logActivity } from "../storage";
 
 interface SettingsProps extends PageProps {
   onExportBackup: () => void;
@@ -11,9 +13,46 @@ interface SettingsProps extends PageProps {
 
 const Settings: React.FC<SettingsProps> = ({ state, onUpdateState, onExportBackup, onImportBackup, onResetApp }) => {
   const userProfile = state.profile!;
+  const [prevFrom, setPrevFrom] = useState(114);
+  const [prevTo, setPrevTo] = useState(1);
 
   const updateProfile = (changes: any) => {
     onUpdateState({ ...state, profile: { ...userProfile, ...changes } });
+  };
+
+  const applyPreviousHifz = () => {
+    const minS = Math.min(prevFrom, prevTo);
+    const maxS = Math.max(prevFrom, prevTo);
+
+    const newlyMastered = MURTAGAS.filter(m =>
+      m.startSurahId >= minS && m.startSurahId <= maxS &&
+      m.endSurahId >= minS && m.endSurahId <= maxS
+    ).map(m => m.id);
+
+    const existingMastered = userProfile.masteredMurtagaIds || [];
+    const combined = Array.from(new Set([...existingMastered, ...newlyMastered])).sort((a, b) => a - b);
+
+    let nextCurrent = userProfile.currentMurtagaId || 1;
+    if (combined.length > 0) {
+      const highestMastered = Math.max(...combined);
+      if (highestMastered < 8) {
+        nextCurrent = highestMastered + 1;
+      } else {
+        nextCurrent = 8;
+      }
+    }
+
+    const updated = logActivity({
+      ...state,
+      profile: {
+        ...userProfile,
+        masteredMurtagaIds: combined,
+        currentMurtagaId: nextCurrent
+      }
+    }, "تحديث الحفظ السابق", `تم إدراج المرتقيات بناءً على الحفظ من ${getSurahName(prevFrom)} إلى ${getSurahName(prevTo)}`);
+
+    onUpdateState(updated);
+    alert("تم تحديث المرتقيات بنجاح! يمكنك مراجعة الإنجازات في صفحة المراجعة.");
   };
 
   return (
@@ -126,6 +165,47 @@ const Settings: React.FC<SettingsProps> = ({ state, onUpdateState, onExportBacku
             ))}
           </div>
           <p className="text-[10px] text-gray-400">ملاحظة: سيقوم التطبيق بتعديل الجدولة لتتخطى الأيام غير المختارة.</p>
+        </div>
+
+        {/* الحفظ السابق */}
+        <div className="space-y-4 pt-6 border-t border-emerald-50">
+          <h4 className="text-sm font-bold text-emerald-800 flex items-center gap-2">
+            <Award className="w-5 h-5 text-amber-500" />
+            <span>🏆 إدراج إنجازات الحفظ السابق</span>
+          </h4>
+          <p className="text-[10px] text-gray-500 leading-relaxed">
+            إذا كنت تحفظ سوراً معينة سابقاً، يمكنك اختيار نطاقها هنا ليتم اعتبار المرتقيات (المحطات) الخاصة بها "مُجتازة" وتظهر في صفحة الإنجازات والمراجعة.
+          </p>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-gray-400 mr-1">من سورة</label>
+              <select
+                value={prevFrom}
+                onChange={(e) => setPrevFrom(Number(e.target.value))}
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl bg-gray-50 text-xs font-bold focus:ring-2 focus:ring-emerald-600 outline-none"
+              >
+                {SURAHS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-gray-400 mr-1">إلى سورة</label>
+              <select
+                value={prevTo}
+                onChange={(e) => setPrevTo(Number(e.target.value))}
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl bg-gray-50 text-xs font-bold focus:ring-2 focus:ring-emerald-600 outline-none"
+              >
+                {SURAHS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <button
+            onClick={applyPreviousHifz}
+            className="w-full py-3 bg-amber-500 text-emerald-950 rounded-xl text-xs font-bold shadow-md hover:bg-amber-600 transition-all active:scale-[0.98]"
+          >
+            تحديث سجل الإنجازات بهذا الحفظ
+          </button>
         </div>
       </div>
 
