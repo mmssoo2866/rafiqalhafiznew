@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
-import { AppState, UserProfile, loadAppState, saveAppState, logActivity, getLocalDateKey, formatDateKey, MemorizationBlock, CompletedReviews } from "../storage";
-import { MURTAGAS, getSurahById, getSurahName, getPageForAyah } from "../quranData";
+import { AppState, UserProfile, loadAppState, saveAppState, logActivity, getLocalDateKey, formatDateKey, MemorizationBlock, CompletedReviews, DEFAULT_PROFILE } from "../storage";
+import { getSurahById, getSurahName, getPageForAyah, MURTAGAS } from "../quranData";
 
 export const useAppActions = () => {
   const [state, setState] = useState<AppState | null>(null);
@@ -27,7 +27,7 @@ export const useAppActions = () => {
         const d = new Date(checkDate);
         d.setDate(d.getDate() - i);
         if (activeDays.includes(d.getDay())) {
-            prevActiveDayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+            prevActiveDayStr = formatDateKey(d);
             break;
         }
     }
@@ -39,19 +39,7 @@ export const useAppActions = () => {
       newStreak = 1;
     }
 
-      const handlePassMurtaga = useCallback(() => {
-    if (!state || !state.profile) return;
-    const currentId = state.profile.currentMurtagaId || 1;
-    const updatedProfile = {
-      ...state.profile,
-      masteredMurtagaIds: [...(state.profile.masteredMurtagaIds || []), currentId],
-      currentMurtagaId: currentId + 1,
-      isInMasteryPhase: false
-    };
-    updateState(logActivity({ ...state, profile: updatedProfile }, "������ �����", `������ ��! �� ������ ${MURTAGAS.find(m => m.id === currentId)?.name} �����.`));
-  }, [state, updateState]);
-
-  return {
+    return {
       ...currentState,
       profile: {
         ...currentState.profile,
@@ -147,7 +135,13 @@ export const useAppActions = () => {
   }, [state, updateState]);
 
   const handleAddHifz = useCallback((surahId: number, fromAyah: number, toAyah: number, repetitions: number, startDate?: string) => {
-    if (!state) return;
+    if (!state || !state.profile) return;
+
+    if (state.profile.isInMasteryPhase) {
+      alert("أنت الآن في مرحلة إتقان ومراجعة المرتقى الحالي. يرجى إتمام المرتقى يدوياً قبل البدء في حفظ جديد.");
+      return;
+    }
+
     const todayStr = getLocalDateKey();
     const start = startDate || todayStr;
     const newBlock: MemorizationBlock = {
@@ -160,15 +154,22 @@ export const useAppActions = () => {
       status: "active"
     };
 
+    const currentMurtaga = MURTAGAS.find(m => m.id === (state.profile?.currentMurtagaId || 1));
+    let updatedProfile = { ...state.profile };
+    if (currentMurtaga && surahId === currentMurtaga.endSurahId) {
+      updatedProfile.isInMasteryPhase = true;
+    }
+
     const updatedState: AppState = {
       ...state,
+      profile: updatedProfile,
       blocks: [newBlock, ...state.blocks],
       repetitions: {
         ...state.repetitions,
         [newBlock.id]: repetitions
       }
     };
-    updateState(logActivity(updatedState, "إضافة مقرر جديد", `تم تسجيل سورة ${getSurahName(surahId)} (بداية من: ${start}).`));
+    updateState(logActivity(updatedState, "إضافة مقرر جديد", `تم تسجيل سورة ${getSurahName(surahId)}. ${updatedProfile.isInMasteryPhase ? "لقد وصلت لنهاية المرتقى!" : ""}`));
   }, [state, updateState]);
 
   const handleDeleteBlock = useCallback((blockId: string) => {
@@ -185,16 +186,15 @@ export const useAppActions = () => {
   }, [state, updateState]);
 
   const handleDetectLocation = useCallback(() => {
-    if (!state || !navigator.geolocation) return;
+    if (!state || !state.profile || !navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition((pos) => {
       const updated = { ...state, profile: { ...state.profile!, lat: pos.coords.latitude, lng: pos.coords.longitude } };
       updateState(logActivity(updated, "تحديث الموقع", "تم تحديث إحداثيات الموقع."));
     });
   }, [state, updateState]);
 
-  const handleResetApp,`n    handlePassMurtaga = useCallback(() => {
+  const handleResetApp = useCallback(() => {
     if (!window.confirm("هل أنت متأكد من حذف كافة البيانات وإعادة ضبط التطبيق؟ لا يمكن التراجع عن هذا الإجراء.")) return;
-
     const newState: AppState = {
       profile: null,
       blocks: [],
@@ -206,7 +206,6 @@ export const useAppActions = () => {
       reviewProgress: {},
       fullReviewDates: []
     };
-
     updateState(newState);
     window.location.reload();
   }, [updateState]);
@@ -216,7 +215,6 @@ export const useAppActions = () => {
     const dataStr = JSON.stringify(state, null, 2);
     const exportFileDefaultName = `rafiq_backup_${formatDateKey(new Date())}.json`;
 
-    // 1. Try modern File System Access API first to allow user to pick location
     if ('showSaveFilePicker' in window) {
       try {
         const handle = await (window as any).showSaveFilePicker({
@@ -229,51 +227,55 @@ export const useAppActions = () => {
         const writable = await handle.createWritable();
         await writable.write(dataStr);
         await writable.close();
-        setState(prev => prev ? logActivity(prev, "تصدير البيانات", "تم حفظ النسخة الاحتياطية في المكان الذي اخترته.") : null);
+        setState(prev => prev ? logActivity(prev, "تصدير البيانات", "تم حفظ النسخة الاحتياطية بنجاح.") : null);
         return;
       } catch (err: any) {
-        if (err.name === 'AbortError') return; // User cancelled
-        console.error("File System API failed, falling back", err);
+        if (err.name === 'AbortError') return;
       }
     }
 
-    // 2. Fallback to standard download method
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
     linkElement.click();
-
-    setState(prev => prev ? logActivity(prev, "تصدير البيانات", "تم تصدير نسخة احتياطية من بياناتك بنجاح.") : null);
+    setState(prev => prev ? logActivity(prev, "تصدير البيانات", "تم تصدير النسخة الاحتياطية بنجاح.") : null);
   }, [state]);
 
   const handleImportBackup = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
         const importedState = JSON.parse(event.target?.result as string) as AppState;
-        // Basic validation
         if (importedState.profile && Array.isArray(importedState.blocks)) {
           updateState(importedState);
-          alert("تم استيراد البيانات بنجاح! سيتم تحديث التطبيق الآن.");
+          alert("تم استيراد البيانات بنجاح!");
           window.location.reload();
-        } else {
-          alert("الملف المختار غير صالح.");
         }
       } catch (err) {
-        alert("فشل قراءة الملف. تأكد أنه ملف JSON سليم.");
+        alert("فشل قراءة الملف.");
       }
     };
     reader.readAsText(file);
   }, [updateState]);
 
+  const handlePassMurtaga = useCallback(() => {
+    if (!state || !state.profile) return;
+    const currentId = state.profile.currentMurtagaId || 1;
+    const updatedProfile = {
+      ...state.profile,
+      masteredMurtagaIds: [...(state.profile.masteredMurtagaIds || []), currentId],
+      currentMurtagaId: currentId + 1,
+      isInMasteryPhase: false
+    };
+    updateState(logActivity({ ...state, profile: updatedProfile }, "اجتياز مرتقى", `هنيئاً لك! تم اجتياز ${MURTAGAS.find(m => m.id === currentId)?.name} بنجاح.`));
+  }, [state, updateState]);
+
   const handleCompleteKhatmahReviewToday = useCallback(() => {
-    if (!state) return;
-    const userProfile = state.profile!;
+    if (!state || !state.profile) return;
+    const userProfile = state.profile;
     const todayStr = getLocalDateKey();
     const completedDates = userProfile.reviewOnlyCompletedDates || [];
     const isAlreadyDone = completedDates.includes(todayStr);
@@ -303,49 +305,27 @@ export const useAppActions = () => {
         nextTA = maxA;
       }
 
-      const nextPage = getPageForAyah(nextSId, nextFA);
-
       updatedProfile = {
         ...updatedProfile,
         reviewOnlySurahId: nextSId,
         reviewOnlyFromAyah: nextFA,
         reviewOnlyToAyah: nextTA,
-        reviewOnlyCurrentPage: nextPage,
+        reviewOnlyCurrentPage: getPageForAyah(nextSId, nextFA),
         reviewOnlyCompletedDates: isAlreadyDone ? completedDates : [...completedDates, todayStr]
       };
     } else {
       const curPage = userProfile.reviewOnlyCurrentPage || 1;
       const amount = userProfile.reviewOnlyDailyAmountValue || 20;
       const dir = userProfile.reviewOnlyDirection || "forward";
-
-      let nextPage = curPage;
-      if (dir === "forward") {
-        nextPage = ((curPage - 1 + amount) % 610) + 1;
-      } else {
-        nextPage = ((curPage - 1 - amount + 610000) % 610) + 1;
-      }
-
+      let nextPage = dir === "forward" ? ((curPage - 1 + amount) % 604) + 1 : ((curPage - 1 - amount + 604000) % 604) + 1;
       updatedProfile = {
         ...updatedProfile,
         reviewOnlyCurrentPage: nextPage,
         reviewOnlyCompletedDates: isAlreadyDone ? completedDates : [...completedDates, todayStr]
       };
     }
-
     updateState(logActivity({ ...updatedState, profile: updatedProfile }, "إنجاز ورد المراجعة", `تم إتمام مراجعة اليوم بنجاح.`));
   }, [state, updateState, incrementStreakIfNeeded]);
-
-    const handlePassMurtaga = useCallback(() => {
-    if (!state || !state.profile) return;
-    const currentId = state.profile.currentMurtagaId || 1;
-    const updatedProfile = {
-      ...state.profile,
-      masteredMurtagaIds: [...(state.profile.masteredMurtagaIds || []), currentId],
-      currentMurtagaId: currentId + 1,
-      isInMasteryPhase: false
-    };
-    updateState(logActivity({ ...state, profile: updatedProfile }, "������ �����", `������ ��! �� ������ ${MURTAGAS.find(m => m.id === currentId)?.name} �����.`));
-  }, [state, updateState]);
 
   return {
     state,
@@ -360,10 +340,9 @@ export const useAppActions = () => {
     handleToggleBlockStatus,
     handleDetectLocation,
     handleCompleteKhatmahReviewToday,
-    handleResetApp,`n    handlePassMurtaga,
+    handleResetApp,
     handleExportBackup,
-    handleImportBackup
+    handleImportBackup,
+    handlePassMurtaga
   };
 };
-
-
