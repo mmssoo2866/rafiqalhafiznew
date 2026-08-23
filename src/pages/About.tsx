@@ -23,7 +23,7 @@ const About: React.FC<AboutProps> = ({ onClose }) => {
               <span className="text-4xl">📖</span>
             </div>
             <div className="text-center md:text-right space-y-2">
-              <h3 className="text-2xl font-bold font-serif">رفيق الحافظ v2.1.6</h3>
+              <h3 className="text-2xl font-bold font-serif">رفيق الحافظ v2.1.7</h3>
               <p className="text-emerald-100 text-sm leading-relaxed">
                 المنظومة التقنية المتكاملة لإدارة ورد مراجعة القرآن الكريم وتثبيت الحفظ بالتكرار المتباعد والتوزيع الذكي على الصلوات والركعات.
               </p>

@@ -1,11 +1,14 @@
 import { SURAHS } from "./quranData";
 
-export function getLocalDateKey(): string {
-  const d = new Date();
+export function formatDateKey(d: Date): string {
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+export function getLocalDateKey(): string {
+  return formatDateKey(new Date());
 }
 
 export interface UserProfile {
@@ -231,10 +234,18 @@ export function saveAppState(state: AppState): void {
   }
 }
 
+export function formatLocalTimestamp(d: Date): string {
+  const date = formatDateKey(d);
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  const seconds = String(d.getSeconds()).padStart(2, "0");
+  return `${date} ${hours}:${minutes}:${seconds}`;
+}
+
 export function logActivity(state: AppState, title: string, desc: string): AppState {
   const newLog = {
     id: `log-${Date.now()}`,
-    timestamp: new Date().toISOString(),
+    timestamp: formatLocalTimestamp(new Date()),
     title,
     desc
   };

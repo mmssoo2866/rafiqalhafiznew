@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { AppState, UserProfile, loadAppState, saveAppState, logActivity, getLocalDateKey, MemorizationBlock, CompletedReviews } from "../storage";
+import { AppState, UserProfile, loadAppState, saveAppState, logActivity, getLocalDateKey, formatDateKey, MemorizationBlock, CompletedReviews } from "../storage";
 import { getSurahById, getSurahName, getPageForAyah } from "../quranData";
 
 export const useAppActions = () => {
@@ -201,7 +201,7 @@ export const useAppActions = () => {
   const handleExportBackup = useCallback(async () => {
     if (!state) return;
     const dataStr = JSON.stringify(state, null, 2);
-    const exportFileDefaultName = `rafiq_backup_${new Date().toISOString().split('T')[0]}.json`;
+    const exportFileDefaultName = `rafiq_backup_${formatDateKey(new Date())}.json`;
 
     // 1. Try modern File System Access API first to allow user to pick location
     if ('showSaveFilePicker' in window) {

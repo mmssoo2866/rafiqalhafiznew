@@ -1,4 +1,4 @@
-import { AppState, MemorizationBlock, UserProfile } from "./storage";
+import { AppState, MemorizationBlock, UserProfile, formatDateKey, formatLocalTimestamp } from "./storage";
 import { getLocalDateKey } from "./storage";
 
 export function generateMockState(defaultProfile: UserProfile): AppState {
@@ -6,10 +6,7 @@ export function generateMockState(defaultProfile: UserProfile): AppState {
   const formatOffsetDate = (daysAgo: number) => {
     const d = new Date(today);
     d.setDate(d.getDate() - daysAgo);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
+    return formatDateKey(d);
   };
 
   const block1: MemorizationBlock = {
@@ -56,7 +53,7 @@ export function generateMockState(defaultProfile: UserProfile): AppState {
     activityLog: [
       {
         id: "demo-l-1",
-        timestamp: new Date(Date.now() - 3 * 24 * 3600000).toISOString(),
+        timestamp: formatLocalTimestamp(new Date(Date.now() - 3 * 24 * 3600000)),
         title: "بدء خطة الحفظ التجريبية",
         desc: "هذه بيانات توضيحية لتجربة واجهة التطبيق."
       }

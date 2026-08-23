@@ -1,4 +1,4 @@
-import { MemorizationBlock, AppState } from "./storage";
+import { MemorizationBlock, AppState, formatDateKey } from "./storage";
 
 export const INTENSIVE_DAYS = [2, 3, 4, 5, 6, 7, 8, 9, 10];
 export const SPACED_DAYS = [12, 14, 16, 21, 31, 41, 55, 66];
@@ -29,7 +29,7 @@ export function getDaysOffset(
   let current = new Date(start);
 
   while (current <= end) {
-    const curStr = current.toISOString().split("T")[0];
+    const curStr = formatDateKey(current);
     const isPaused = fullReviewDates.includes(curStr);
     const isDayActive = activeDays.includes(current.getDay());
 

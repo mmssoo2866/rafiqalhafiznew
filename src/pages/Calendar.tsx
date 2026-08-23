@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Book, RotateCcw, A
 import { PageProps } from "../types";
 import { getTasksForDate, hasDay66TriggerToday } from "../scheduler";
 import { getSurahName } from "../quranData";
+import { formatDateKey } from "../storage";
 
 const Calendar: React.FC<PageProps> = ({ state, todayStr, onToggleTab, onNavigateToMushaf }) => {
   // We'll track the view by a Gregorian date that falls in the target Hijri month
@@ -64,7 +65,7 @@ const Calendar: React.FC<PageProps> = ({ state, todayStr, onToggleTab, onNavigat
     while (hInfo.month === targetMonth) {
       days.push({
         date: new Date(curr),
-        dateStr: curr.toISOString().split("T")[0],
+        dateStr: formatDateKey(curr),
         hDay: hInfo.day
       });
       curr.setDate(curr.getDate() + 1);
