@@ -198,12 +198,34 @@ export const useAppActions = () => {
     window.location.reload();
   }, [updateState]);
 
-  const handleExportBackup = useCallback(() => {
+  const handleExportBackup = useCallback(async () => {
     if (!state) return;
     const dataStr = JSON.stringify(state, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-
     const exportFileDefaultName = `rafiq_backup_${new Date().toISOString().split('T')[0]}.json`;
+
+    // 1. Try modern File System Access API first to allow user to pick location
+    if ('showSaveFilePicker' in window) {
+      try {
+        const handle = await (window as any).showSaveFilePicker({
+          suggestedName: exportFileDefaultName,
+          types: [{
+            description: 'Rafiq Backup File',
+            accept: { 'application/json': ['.json'] },
+          }],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(dataStr);
+        await writable.close();
+        setState(prev => prev ? logActivity(prev, "تصدير البيانات", "تم حفظ النسخة الاحتياطية في المكان الذي اخترته.") : null);
+        return;
+      } catch (err: any) {
+        if (err.name === 'AbortError') return; // User cancelled
+        console.error("File System API failed, falling back", err);
+      }
+    }
+
+    // 2. Fallback to standard download method
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
 
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);

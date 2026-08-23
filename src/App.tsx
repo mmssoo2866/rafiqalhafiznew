@@ -30,6 +30,13 @@ import Settings from "./pages/Settings";
 import About from "./pages/About";
 import Onboarding from "./components/Onboarding";
 
+// For PWA installation
+let deferredPrompt: any = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+});
+
 export default function App() {
   const {
     state,
@@ -56,12 +63,35 @@ export default function App() {
   const [mushafViewMode, setMushafViewMode] = useState<"image" | "offline">("image");
   const [newHifz, setNewHifz] = useState({ surahId: 1, fromAyah: 1, toAyah: 7, repetitions: 100 });
   const [deletingBlockId, setDeletingBlockId] = useState<string | null>(null);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
 
   useEffect(() => {
     setState(loadAppState());
     const interval = setInterval(() => setTodayStr(getLocalDateKey()), 60000);
-    return () => clearInterval(interval);
+
+    // Install prompt reminder logic: Check every 5 minutes
+    const installReminder = setInterval(() => {
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+      if (!isStandalone && deferredPrompt) {
+        setShowInstallPrompt(true);
+      }
+    }, 5 * 60 * 1000);
+
+    return () => {
+      clearInterval(interval);
+      clearInterval(installReminder);
+    };
   }, [setState]);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      deferredPrompt = null;
+      setShowInstallPrompt(false);
+    }
+  };
 
   if (!state) return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-emerald-950 font-serif">جاري التحميل...</div>;
 
@@ -102,7 +132,7 @@ export default function App() {
             <div className="w-10 h-10 bg-amber-500/10 border border-amber-500 rounded-xl flex items-center justify-center text-xl">📖</div>
             <div>
               <h1 className="text-xl font-bold font-serif flex items-center gap-2">
-                رفيق الحافظ <span className="text-[10px] px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full font-sans">v2.1.3</span>
+                رفيق الحافظ <span className="text-[10px] px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full font-sans">v2.1.4</span>
                 <button onClick={() => setActiveTab("about")} className="mr-2 px-3 py-1 bg-white/10 rounded-full text-[10px] font-bold">عن التطبيق</button>
               </h1>
               <p className="text-[10px] text-emerald-200">الجدولة التفاعلية والمراجعة المدمجة بالصلوات</p>
@@ -136,6 +166,30 @@ export default function App() {
           {activeTab === "about" && <About onClose={() => setActiveTab("home")} />}
         </AnimatePresence>
       </main>
+
+      {/* PWA Installation Prompt Reminder */}
+      <AnimatePresence>
+        {showInstallPrompt && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed bottom-20 inset-x-4 z-50 bg-emerald-900 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between border border-emerald-700"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center text-xl shadow-inner">📖</div>
+              <div>
+                <h4 className="text-sm font-bold">ثبت رفيق الحافظ على جوالك</h4>
+                <p className="text-[10px] text-emerald-200">للوصول السريع وتجربة أفضل</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setShowInstallPrompt(false)} className="px-3 py-2 text-xs font-bold text-emerald-300">لاحقاً</button>
+              <button onClick={handleInstallClick} className="px-4 py-2 bg-amber-500 text-emerald-950 rounded-xl text-xs font-bold shadow-md">تثبيت الآن</button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <footer className="fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 shadow-lg py-2 z-40">
         <div className="max-w-md mx-auto flex justify-around">
