@@ -23,7 +23,7 @@ const About: React.FC<AboutProps> = ({ onClose }) => {
               <span className="text-4xl">📖</span>
             </div>
             <div className="text-center md:text-right space-y-2">
-              <h3 className="text-2xl font-bold font-serif">رفيق الحافظ v2.1.9</h3>
+              <h3 className="text-2xl font-bold font-serif">رفيق الحافظ v2.2.0</h3>
               <p className="text-emerald-100 text-sm leading-relaxed">
                 المنظومة التقنية المتكاملة لإدارة ورد مراجعة القرآن الكريم وتثبيت الحفظ بالتكرار المتباعد والتوزيع الذكي على الصلوات والركعات.
               </p>
@@ -76,7 +76,10 @@ const About: React.FC<AboutProps> = ({ onClose }) => {
         <div className="bg-gray-50 rounded-3xl p-8 text-center space-y-4 border border-gray-100">
           <h4 className="text-emerald-900 font-bold">للتواصل والدعم</h4>
           <p className="text-xs text-gray-500">مشروع رفيق الحافظ هو وقف خيري تقني، نسأل الله أن ينفع به حفاظ كتابه.</p>
-          <a href="https://rafiqalhafiznew-ztg9.vercel.app/" className="inline-block text-emerald-700 font-bold hover:underline">rafiqalhafiznew-ztg9.vercel.app</a>
+          <div className="flex flex-col gap-2">
+            <a href="mailto:rafeqalhafiz@gmail.com" className="text-emerald-700 font-bold hover:underline">rafeqalhafiz@gmail.com</a>
+            <a href="https://rafiqalhafiznew-ztg9.vercel.app/" className="text-emerald-600 text-sm hover:underline">الموقع الإلكتروني</a>
+          </div>
         </div>
       </div>
     </div>

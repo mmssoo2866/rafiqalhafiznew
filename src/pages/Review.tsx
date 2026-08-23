@@ -47,6 +47,58 @@ const Review: React.FC<ReviewProps> = ({
         </p>
       </div>
 
+      {!isReviewOnly && (
+        /* MURTAGAS SECTION (Moved to top) */
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-6">
+          <h3 className="text-xl font-serif font-bold text-emerald-900 border-b pb-3 flex justify-between items-center">
+            <span>🏆 المرتقيات</span>
+            <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold">المرتقى {state.profile?.currentMurtagaId || 1}</span>
+          </h3>
+
+          {state.profile?.isInMasteryPhase && (
+            <div className="bg-amber-50 border border-amber-200 p-5 rounded-2xl space-y-4">
+              <div className="flex items-center gap-3 text-amber-800">
+                <AlertCircle className="w-6 h-6" />
+                <div className="text-right">
+                  <h4 className="font-bold text-sm">مرحلة الإتقان والمراجعة</h4>
+                  <p className="text-[10px] opacity-80">لقد وصلت لنهاية المرتقى الحالي. تم إيقاف الحفظ الجديد لتمكينك من تثبيت ما سبق.</p>
+                </div>
+              </div>
+              <button
+                onClick={handlePassMurtaga}
+                className="w-full py-3 bg-amber-600 text-white rounded-xl font-bold text-sm shadow-md hover:bg-amber-700 transition-all flex items-center justify-center gap-2"
+              >
+                <span>أتممت المرتقى الحالي وأتقنتُه</span>
+                <CheckCircle className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
+          <div className="space-y-4">
+            {MURTAGAS.filter(m =>
+              (state.profile?.masteredMurtagaIds || []).includes(m.id) || m.id === (state.profile?.currentMurtagaId || 1)
+            ).map((m) => {
+              const isMastered = (state.profile?.masteredMurtagaIds || []).includes(m.id);
+              return (
+                <div key={m.id} className={`p-5 rounded-2xl border transition-all ${isMastered ? "bg-emerald-50/50 border-emerald-100 opacity-80" : "bg-white border-emerald-50 shadow-sm"}`}>
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className={`font-bold ${isMastered ? "text-emerald-800" : "text-gray-900"}`}>
+                      {isMastered ? "✓ " : "◉ "}{m.name}
+                    </h4>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-lg font-bold ${isMastered ? "bg-emerald-100 text-emerald-700" : "bg-blue-50 text-blue-700"}`}>
+                      {isMastered ? "تم الاجتياز" : "جارٍ العمل"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                     <p className="text-xs text-gray-500">من {getSurahName(m.startSurahId)} إلى {getSurahName(m.endSurahId)}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* RAKAH DISTRIBUTION MAP */}
       <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-4">
         <h3 className="text-lg font-serif font-bold text-emerald-900 border-b pb-3 flex justify-between items-center">
@@ -99,58 +151,6 @@ const Review: React.FC<ReviewProps> = ({
           </div>
         )}
       </div>
-
-      {!isReviewOnly && (
-        /* MURTAGAS SECTION (Replacing Cumulative Groups) */
-        <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-6">
-          <h3 className="text-xl font-serif font-bold text-emerald-900 border-b pb-3 flex justify-between items-center">
-            <span>🏆 المرتقيات</span>
-            <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold">المرتقى {state.profile?.currentMurtagaId || 1}</span>
-          </h3>
-
-          {state.profile?.isInMasteryPhase && (
-            <div className="bg-amber-50 border border-amber-200 p-5 rounded-2xl space-y-4">
-              <div className="flex items-center gap-3 text-amber-800">
-                <AlertCircle className="w-6 h-6" />
-                <div className="text-right">
-                  <h4 className="font-bold text-sm">مرحلة الإتقان والمراجعة</h4>
-                  <p className="text-[10px] opacity-80">لقد وصلت لنهاية المرتقى الحالي. تم إيقاف الحفظ الجديد لتمكينك من تثبيت ما سبق.</p>
-                </div>
-              </div>
-              <button 
-                onClick={handlePassMurtaga}
-                className="w-full py-3 bg-amber-600 text-white rounded-xl font-bold text-sm shadow-md hover:bg-amber-700 transition-all flex items-center justify-center gap-2"
-              >
-                <span>أتممت المرتقى الحالي وأتقنتُه</span>
-                <CheckCircle className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-
-          <div className="space-y-4">
-            {MURTAGAS.filter(m => 
-              (state.profile?.masteredMurtagaIds || []).includes(m.id) || m.id === (state.profile?.currentMurtagaId || 1)
-            ).map((m) => {
-              const isMastered = (state.profile?.masteredMurtagaIds || []).includes(m.id);
-              return (
-                <div key={m.id} className={`p-5 rounded-2xl border transition-all ${isMastered ? "bg-emerald-50/50 border-emerald-100 opacity-80" : "bg-white border-emerald-50 shadow-sm"}`}>
-                  <div className="flex justify-between items-center mb-2">
-                    <h4 className={`font-bold ${isMastered ? "text-emerald-800" : "text-gray-900"}`}>
-                      {isMastered ? "✓ " : "◉ "}{m.name}
-                    </h4>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-lg font-bold ${isMastered ? "bg-emerald-100 text-emerald-700" : "bg-blue-50 text-blue-700"}`}>
-                      {isMastered ? "تم الاجتياز" : "جارٍ العمل"}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                     <p className="text-xs text-gray-500">من {getSurahName(m.startSurahId)} إلى {getSurahName(m.endSurahId)}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
       {!isReviewOnly && (
         /* DAILY REVIEWS */
