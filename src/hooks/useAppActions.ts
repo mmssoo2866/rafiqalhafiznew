@@ -134,16 +134,17 @@ export const useAppActions = () => {
     updateState(logActivity(updatedState, "إكمال يوم المراجعة الكبرى", "تم إكمال مراجعة اليوم 66 بنجاح واستئناف خطة الحفظ."));
   }, [state, updateState]);
 
-  const handleAddHifz = useCallback((surahId: number, fromAyah: number, toAyah: number, repetitions: number) => {
+  const handleAddHifz = useCallback((surahId: number, fromAyah: number, toAyah: number, repetitions: number, startDate?: string) => {
     if (!state) return;
     const todayStr = getLocalDateKey();
+    const start = startDate || todayStr;
     const newBlock: MemorizationBlock = {
       id: `block-${Date.now()}`,
       surahId,
       fromAyah,
       toAyah,
       repetitionTarget: repetitions,
-      startDate: todayStr,
+      startDate: start,
       status: "active"
     };
 
@@ -155,7 +156,7 @@ export const useAppActions = () => {
         [newBlock.id]: repetitions
       }
     };
-    updateState(logActivity(updatedState, "إضافة مقرر جديد", `تم تسجيل سورة ${getSurahName(surahId)}.`));
+    updateState(logActivity(updatedState, "إضافة مقرر جديد", `تم تسجيل سورة ${getSurahName(surahId)} (بداية من: ${start}).`));
   }, [state, updateState]);
 
   const handleDeleteBlock = useCallback((blockId: string) => {

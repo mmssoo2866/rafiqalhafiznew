@@ -86,6 +86,16 @@ const Hifz: React.FC<HifzProps> = ({
               />
             </div>
 
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-gray-600 block">تاريخ بداية المقرر</label>
+              <input
+                type="date"
+                value={newHifz.startDate}
+                onChange={(e) => setNewHifz({ ...newHifz, startDate: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl bg-gray-50 text-xs font-bold text-right"
+              />
+            </div>
+
             <button type="submit" className="w-full py-3 bg-emerald-700 text-white rounded-xl font-bold hover:bg-emerald-800 transition shadow-md">حفظ المقرر ➔</button>
           </form>
         </div>

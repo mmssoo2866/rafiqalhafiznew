@@ -198,37 +198,58 @@ const Calendar: React.FC<PageProps> = ({ state, todayStr, onToggleTab, onNavigat
           <section className="space-y-3">
             <h5 className="text-xs font-bold text-emerald-800 bg-emerald-50 inline-block px-3 py-1 rounded-full flex items-center gap-2">
               <Book className="w-3.5 h-3.5" />
-              <span>الحفظ الجديد</span>
+              <span>الحفظ الجديد (اليوم الأول)</span>
             </h5>
             {selectedDateTasks.filter(t => t.type === "memorization").length === 0 ? (
-              <p className="text-xs text-gray-400 pr-4">لا يوجد مقرر حفظ جديد مجدول.</p>
+              <p className="text-xs text-gray-400 pr-4">لا يوجد مقرر حفظ جديد يبدأ في هذا التاريخ.</p>
             ) : (
               selectedDateTasks.filter(t => t.type === "memorization").map(t => (
-                <div key={t.block.id} className="pr-4 border-r-2 border-emerald-100 py-1">
+                <div key={t.block.id} className="pr-4 border-r-4 border-emerald-500 py-1">
                   <p className="text-sm font-bold text-gray-800">سورة {getSurahName(t.block.surahId)}</p>
-                  <p className="text-[10px] text-gray-500">الآيات: {t.block.fromAyah} - {t.block.toAyah} | التكرار: {t.block.repetitionTarget}</p>
+                  <p className="text-[10px] text-gray-500">الآيات: {t.block.fromAyah} - {t.block.toAyah} | التكرار المطلوب: {t.block.repetitionTarget}</p>
                 </div>
               ))
             )}
           </section>
 
-          {/* REVIEW SECTION */}
+          {/* INTENSIVE REVIEW SECTION */}
+          <section className="space-y-3">
+            <h5 className="text-xs font-bold text-orange-800 bg-orange-50 inline-block px-3 py-1 rounded-full flex items-center gap-2">
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>المراجعة المكثفة (يوم 2 - 10)</span>
+            </h5>
+            {selectedDateTasks.filter(t => t.type === "review" && t.offset <= 10).length === 0 ? (
+              <p className="text-xs text-gray-400 pr-4">لا توجد مراجعات مكثفة.</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pr-4">
+                {selectedDateTasks.filter(t => t.type === "review" && t.offset <= 10).map(t => (
+                  <div key={t.block.id} className="p-3 bg-white rounded-2xl border border-orange-100 border-r-4 border-r-orange-400">
+                    <div className="flex justify-between items-start mb-1">
+                      <span className="text-sm font-bold text-gray-800">سورة {getSurahName(t.block.surahId)}</span>
+                      <span className="text-[9px] px-2 py-0.5 rounded-full font-bold bg-orange-100 text-orange-700">اليوم {t.offset}</span>
+                    </div>
+                    <p className="text-[10px] text-gray-500">آية {t.block.fromAyah} - {t.block.toAyah}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* SPACED REPETITION SECTION */}
           <section className="space-y-3">
             <h5 className="text-xs font-bold text-blue-800 bg-blue-50 inline-block px-3 py-1 rounded-full flex items-center gap-2">
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>المراجعة</span>
+              <span>المراجعة المتباعدة (يوم 12 - 66)</span>
             </h5>
-            {selectedDateTasks.filter(t => t.type === "review").length === 0 ? (
-              <p className="text-xs text-gray-400 pr-4">لا توجد مراجعات مجدولة.</p>
+            {selectedDateTasks.filter(t => t.type === "review" && t.offset > 10).length === 0 ? (
+              <p className="text-xs text-gray-400 pr-4">لا توجد مراجعات متباعدة.</p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pr-4">
-                {selectedDateTasks.filter(t => t.type === "review").map(t => (
-                  <div key={t.block.id} className="p-3 bg-gray-50 rounded-2xl border border-gray-100">
+                {selectedDateTasks.filter(t => t.type === "review" && t.offset > 10).map(t => (
+                  <div key={t.block.id} className="p-3 bg-white rounded-2xl border border-blue-100 border-r-4 border-r-blue-400">
                     <div className="flex justify-between items-start mb-1">
                       <span className="text-sm font-bold text-gray-800">سورة {getSurahName(t.block.surahId)}</span>
-                      <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold ${t.offset <= 10 ? "bg-orange-100 text-orange-700" : "bg-blue-100 text-blue-700"}`}>
-                        يوم {t.offset}
-                      </span>
+                      <span className="text-[9px] px-2 py-0.5 rounded-full font-bold bg-blue-100 text-blue-700">اليوم {t.offset}</span>
                     </div>
                     <p className="text-[10px] text-gray-500">آية {t.block.fromAyah} - {t.block.toAyah}</p>
                   </div>
