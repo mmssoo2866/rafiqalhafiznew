@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { motion } from "motion/react";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Book, RotateCcw, AlertCircle } from "lucide-react";
 import { PageProps } from "../types";
@@ -6,8 +6,86 @@ import { getTasksForDate, hasDay66TriggerToday } from "../scheduler";
 import { getSurahName } from "../quranData";
 
 const Calendar: React.FC<PageProps> = ({ state, todayStr, onToggleTab, onNavigateToMushaf }) => {
+  // We'll track the view by a Gregorian date that falls in the target Hijri month
   const [viewDate, setViewDate] = useState(new Date());
   const [selectedDateStr, setSelectedDateStr] = useState(todayStr);
+
+  const getHijriInfo = (date: Date) => {
+    const parts = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn', {
+      day: 'numeric',
+      month: 'numeric',
+      year: 'numeric'
+    }).formatToParts(date);
+
+    const info: any = {};
+    parts.forEach(p => info[p.type] = p.value);
+
+    const monthName = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', {
+      month: 'long'
+    }).format(date);
+
+    return {
+      day: parseInt(info.day),
+      month: parseInt(info.month),
+      year: parseInt(info.year),
+      monthName
+    };
+  };
+
+  const hijriView = useMemo(() => getHijriInfo(viewDate), [viewDate]);
+
+  // Calculate the grid for the current Hijri month
+  const hijriGrid = useMemo(() => {
+    const days = [];
+    // 1. Find the Gregorian date for the 1st of the current Hijri month
+    let firstOfMonth = new Date(viewDate);
+    // Rough alignment: move back by (currentHijriDay - 1) days
+    const currentHInfo = getHijriInfo(viewDate);
+    firstOfMonth.setDate(firstOfMonth.getDate() - (currentHInfo.day - 1));
+
+    // Ensure we are exactly on hDay 1 (handle potential edge cases)
+    let check = getHijriInfo(firstOfMonth);
+    while (check.day > 1) {
+        firstOfMonth.setDate(firstOfMonth.getDate() - 1);
+        check = getHijriInfo(firstOfMonth);
+    }
+    while (check.month !== currentHInfo.month) {
+        firstOfMonth.setDate(firstOfMonth.getDate() + 1);
+        check = getHijriInfo(firstOfMonth);
+    }
+
+    const firstDayWeekday = firstOfMonth.getDay(); // 0 (Sun) to 6 (Sat)
+
+    // 2. Iterate through the month until the Hijri month changes
+    let curr = new Date(firstOfMonth);
+    let hInfo = getHijriInfo(curr);
+    const targetMonth = hInfo.month;
+
+    while (hInfo.month === targetMonth) {
+      days.push({
+        date: new Date(curr),
+        dateStr: curr.toISOString().split("T")[0],
+        hDay: hInfo.day
+      });
+      curr.setDate(curr.getDate() + 1);
+      hInfo = getHijriInfo(curr);
+    }
+
+    return { days, firstDayWeekday };
+  }, [viewDate]);
+
+  const handlePrevMonth = () => {
+    const d = new Date(hijriGrid.days[0].date);
+    d.setDate(d.getDate() - 5); // Jump into the previous hijri month
+    setViewDate(d);
+  };
+
+  const handleNextMonth = () => {
+    const lastDay = hijriGrid.days[hijriGrid.days.length - 1].date;
+    const d = new Date(lastDay);
+    d.setDate(d.getDate() + 5); // Jump into the next hijri month
+    setViewDate(d);
+  };
 
   const selectedDateTasks = useMemo(() => {
     return getTasksForDate(state, selectedDateStr);
@@ -17,31 +95,8 @@ const Calendar: React.FC<PageProps> = ({ state, todayStr, onToggleTab, onNavigat
     return hasDay66TriggerToday(state, selectedDateStr);
   }, [state, selectedDateStr]);
 
-  const daysInMonth = useMemo(() => {
-    const year = viewDate.getFullYear();
-    const month = viewDate.getMonth();
-    const firstDay = new Date(year, month, 1).getDay();
-    const totalDays = new Date(year, month + 1, 0).getDate();
-    return { firstDay, totalDays };
-  }, [viewDate]);
-
-  const monthName = viewDate.toLocaleString("ar-SA", { month: "long" });
-  const yearName = viewDate.getFullYear();
-
-  const handlePrevMonth = () => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
-  const handleNextMonth = () => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
-
-  const getHijriDate = (date: Date) => {
-    return new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    }).format(date);
-  };
-
-  const renderDay = (day: number) => {
-    const date = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
-    const dateStr = date.toISOString().split("T")[0];
+  const renderDay = (dayInfo: any) => {
+    const { date, dateStr, hDay } = dayInfo;
     const isSelected = selectedDateStr === dateStr;
     const isToday = todayStr === dateStr;
     const activeDays = state.profile?.activeDays || [0, 1, 2, 3, 4, 5, 6];
@@ -55,7 +110,7 @@ const Calendar: React.FC<PageProps> = ({ state, todayStr, onToggleTab, onNavigat
 
     return (
       <button
-        key={day}
+        key={dateStr}
         onClick={() => setSelectedDateStr(dateStr)}
         className={`relative h-14 w-full flex flex-col items-center justify-center rounded-2xl transition-all border ${
           isSelected
@@ -67,12 +122,13 @@ const Calendar: React.FC<PageProps> = ({ state, todayStr, onToggleTab, onNavigat
                 : "bg-white text-gray-700 border-gray-100 hover:bg-gray-50"
         }`}
       >
-        <span className={`text-sm font-bold ${isInactive && !isSelected ? "line-through decoration-slate-200" : ""}`}>{day}</span>
-        <div className="flex gap-0.5 mt-1">
-          {hasHifz && <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-white" : "bg-emerald-500"}`} title="حفظ" />}
-          {hasReview && <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-white/70" : "bg-blue-400"}`} title="مراجعة" />}
-          {hasIntensive && <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-white/50" : "bg-orange-400"}`} title="مكثفة" />}
-          {hasFullReview && <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-white/30" : "bg-purple-500"}`} title="كبرى" />}
+        <span className={`text-sm font-bold ${isInactive && !isSelected ? "line-through decoration-slate-200" : ""}`}>{hDay}</span>
+        <span className="text-[7px] opacity-40 mt-[-2px]">{date.getDate()}</span>
+        <div className="flex gap-0.5 mt-0.5">
+          {hasHifz && <div className={`w-1 h-1 rounded-full ${isSelected ? "bg-white" : "bg-emerald-500"}`} />}
+          {hasReview && <div className={`w-1 h-1 rounded-full ${isSelected ? "bg-white/70" : "bg-blue-400"}`} />}
+          {hasIntensive && <div className={`w-1 h-1 rounded-full ${isSelected ? "bg-white/50" : "bg-orange-400"}`} />}
+          {hasFullReview && <div className={`w-1 h-1 rounded-full ${isSelected ? "bg-white/30" : "bg-purple-500"}`} />}
         </div>
       </button>
     );
@@ -86,7 +142,7 @@ const Calendar: React.FC<PageProps> = ({ state, todayStr, onToggleTab, onNavigat
       className="space-y-6 text-right"
       dir="rtl"
     >
-      {/* CALENDAR HEADER & GRID */}
+      {/* HIJRI CALENDAR HEADER & GRID */}
       <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -94,8 +150,10 @@ const Calendar: React.FC<PageProps> = ({ state, todayStr, onToggleTab, onNavigat
               <CalendarIcon className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-serif font-bold text-emerald-950">{monthName} {yearName}</h3>
-              <p className="text-[10px] text-emerald-600 font-bold">{getHijriDate(viewDate)}</p>
+              <h3 className="text-xl font-serif font-bold text-emerald-950">{hijriView.monthName} {hijriView.year}</h3>
+              <p className="text-[10px] text-gray-400 font-bold">
+                {hijriGrid.days[0].date.toLocaleString("ar-SA", { month: 'long', year: 'numeric' })}
+              </p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -105,22 +163,26 @@ const Calendar: React.FC<PageProps> = ({ state, todayStr, onToggleTab, onNavigat
           </div>
         </div>
 
-        <div className="grid grid-cols-7 gap-2">
-          {["ح", "ن", "ث", "ر", "خ", "ج", "س"].map(d => (
+        <div className="grid grid-cols-7 gap-1.5">
+          {["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"].map(d => (
             <div key={d} className="text-center text-[10px] font-bold text-gray-400 pb-2">{d}</div>
           ))}
-          {Array.from({ length: daysInMonth.firstDay }).map((_, i) => (
+          {Array.from({ length: hijriGrid.firstDayWeekday }).map((_, i) => (
             <div key={`empty-${i}`} className="h-14" />
           ))}
-          {Array.from({ length: daysInMonth.totalDays }).map((_, i) => renderDay(i + 1))}
+          {hijriGrid.days.map(dayInfo => renderDay(dayInfo))}
         </div>
       </div>
 
       {/* SELECTED DAY PLAN */}
       <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-6">
         <div className="border-b pb-4">
-          <h4 className="text-xl font-serif font-bold text-emerald-950">📅 خطة يوم {selectedDateStr.split('-')[2]} {monthName}</h4>
-          <p className="text-xs text-gray-400 mt-1">{getHijriDate(new Date(selectedDateStr))}</p>
+          <h4 className="text-xl font-serif font-bold text-emerald-950">
+            📅 خطة يوم {getHijriInfo(new Date(selectedDateStr)).day} {hijriView.monthName}
+          </h4>
+          <p className="text-xs text-gray-400 mt-1">
+             {new Date(selectedDateStr).toLocaleDateString("ar-SA", { day: 'numeric', month: 'long', year: 'numeric' })}
+          </p>
         </div>
 
         {isDay66 && (
