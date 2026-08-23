@@ -48,11 +48,14 @@ export interface UserProfile {
   reviewOnlyCompletedDates?: string[];
   mainReviewStartSurahId?: number;
   mainReviewEndSurahId?: number;
-  mainReviewDailyAmountValue?: number; // v2.1: separated from reviewOnlyDailyAmountValue
+  mainReviewDailyAmountValue?: number;
   mainReviewProgressPages?: number;
   reviewStartPoint: string;
-  enabledPrayers?: string[];`n  currentMurtagaId?: number;`n  masteredMurtagaIds?: number[];`n  isInMasteryPhase?: boolean; // v2.1.2: user selected prayers for review
-  activeDays?: number[]; // v2.1.3: 0-6 (Sun-Sat)
+  enabledPrayers?: string[];
+  currentMurtagaId?: number;
+  masteredMurtagaIds?: number[];
+  isInMasteryPhase?: boolean;
+  activeDays?: number[];
 }
 
 export interface MemorizationBlock {
@@ -66,11 +69,11 @@ export interface MemorizationBlock {
 }
 
 export interface RepetitionState {
-  [blockId: string]: number; // remaining repetitions for today
+  [blockId: string]: number;
 }
 
 export interface CompletedReviews {
-  [dateStr: string]: string[]; // list of blockIds reviewed on that date
+  [dateStr: string]: string[];
 }
 
 export interface AppState {
@@ -78,7 +81,7 @@ export interface AppState {
   blocks: MemorizationBlock[];
   completedReviews: CompletedReviews;
   repetitions: RepetitionState;
-  mushafCache: number[]; // downloaded pages
+  mushafCache: number[];
   activityLog: { id: string; timestamp: string; title: string; desc: string }[];
   onboardingCompleted: boolean;
   reviewProgress: { [date: string]: number };
@@ -92,8 +95,8 @@ export const DEFAULT_PROFILE: UserProfile = {
   gender: "male",
   prayerRole: "imam",
   nightPrayerRakats: 8,
-  lat: 21.4225, // Mecca
-  lng: 39.8262, // Mecca
+  lat: 21.4225,
+  lng: 39.8262,
   useSunnah: true,
   memorizationDirection: "forward",
   autoOpenMushaf: true,
@@ -104,13 +107,7 @@ export const DEFAULT_PROFILE: UserProfile = {
   notifyReviewReminder: true,
   notifyPrayerReviewBefore: true,
   prayerReminderOffsetMinutes: 15,
-  prayerReminderOffsets: {
-    fajr: 15,
-    dhuhr: 15,
-    asr: 15,
-    maghrib: 15,
-    isha: 15
-  },
+  prayerReminderOffsets: { fajr: 15, dhuhr: 15, asr: 15, maghrib: 15, isha: 15 },
   duhaRakats: 4,
   appTrack: "hifz_and_review",
   reviewOnlyDirection: "forward",
@@ -123,95 +120,37 @@ export const DEFAULT_PROFILE: UserProfile = {
   reviewOnlyCompletedDates: [],
   mainReviewStartSurahId: 114,
   mainReviewEndSurahId: 18,
-  mainReviewDailyAmountValue: 10, // Default 10 pages for main review
+  mainReviewDailyAmountValue: 10,
   mainReviewProgressPages: 0,
   reviewStartPoint: 'fajr',
-  enabledPrayers: ["fajr", "duha", "dhuhr", "asr", "maghrib", "isha", "qiyam"],`n  currentMurtagaId: 1,`n  masteredMurtagaIds: [],`n  isInMasteryPhase: false,
-  activeDays: [0, 1, 2, 3, 4, 5, 6]
+  enabledPrayers: ['fajr', 'duha', 'dhuhr', 'asr', 'maghrib', 'isha', 'qiyam'],
+  activeDays: [0, 1, 2, 3, 4, 5, 6],
+  currentMurtagaId: 1,
+  masteredMurtagaIds: [],
+  isInMasteryPhase: false
 };
 
 export function loadAppState(): AppState {
   try {
     const v2serialized = localStorage.getItem(STORAGE_KEY);
     let state: AppState;
-    let isMigration = false;
-
     if (v2serialized) {
       state = JSON.parse(v2serialized) as AppState;
     } else {
-      const v1serialized = localStorage.getItem("rafiq_alhafiz_state_v1");
-      if (v1serialized) {
-        state = JSON.parse(v1serialized) as AppState;
-        state.onboardingCompleted = true;
-        isMigration = true;
-      } else {
-        // Initial state for new user
-        return {
-          profile: null,
-          blocks: [],
-          completedReviews: {},
-          repetitions: {},
-          mushafCache: [],
-          activityLog: [],
-          onboardingCompleted: false,
-          reviewProgress: {},
-          fullReviewDates: []
-        };
-      }
+      return {
+        profile: null,
+        blocks: [],
+        completedReviews: {},
+        repetitions: {},
+        mushafCache: [],
+        activityLog: [],
+        onboardingCompleted: false,
+        reviewProgress: {},
+        fullReviewDates: []
+      };
     }
-
-    // Ensure fields for v2
-    if (state.onboardingCompleted === undefined) state.onboardingCompleted = false;
-    if (!state.reviewProgress) state.reviewProgress = {};
-    if (!state.fullReviewDates) state.fullReviewDates = [];
-    if (state.profile && !state.profile.activeDays) state.profile.activeDays = [0, 1, 2, 3, 4, 5, 6];
-
-    const todayStr = getLocalDateKey();
-    if (state.profile && state.profile.lastActiveDate !== todayStr) {
-      const activeDays = state.profile.activeDays || [0, 1, 2, 3, 4, 5, 6];
-      const todayDay = new Date().getDay();
-      
-      // If today is a disabled day, we don't calculate streak or reset tasks here
-      // But we still might want to show the current state.
-      // However, getTasksForDate will return [] for disabled days anyway.
-
-      if (activeDays.includes(todayDay)) {
-          // Check if the user missed the PREVIOUS active day
-          const checkDate = new Date();
-          checkDate.setHours(0, 0, 0, 0);
-          let prevActiveDayStr = "";
-          for (let i = 1; i <= 7; i++) {
-            const d = new Date(checkDate);
-            d.setDate(d.getDate() - i);
-            if (activeDays.includes(d.getDay())) {
-                prevActiveDayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-                break;
-            }
-          }
-
-          if (state.profile.lastActiveDate !== prevActiveDayStr) {
-            state.profile.streakDays = 0;
-            saveAppState(state);
-          }
-      }
-
-      // Reset daily progress for the new day
-      state.reviewProgress = {};
-
-      // Reset today's new memorization repetition counters
-      state.repetitions = {};
-      state.blocks.forEach(b => {
-        if (b.startDate === todayStr) {
-          state.repetitions[b.id] = b.repetitionTarget;
-        }
-      });
-    } else if (isMigration) {
-      saveAppState(state);
-    }
-    
     return state;
   } catch (error) {
-    console.error("Failed to load app state", error);
     return {
       profile: null,
       blocks: [],
@@ -229,9 +168,7 @@ export function loadAppState(): AppState {
 export function saveAppState(state: AppState): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (error) {
-    console.error("Failed to save app state", error);
-  }
+  } catch (error) {}
 }
 
 export function formatLocalTimestamp(d: Date): string {
