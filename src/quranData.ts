@@ -6,14 +6,14 @@ export interface MurtagaInfo {
 }
 
 export const MURTAGAS: MurtagaInfo[] = [
-  { id: 1, name: "مرتقى النبأ", startSurahId: 114, endSurahId: 67 },
+  { id: 1, name: "مرتقى الملك", startSurahId: 114, endSurahId: 67 },
   { id: 2, name: "مرتقى ق", startSurahId: 66, endSurahId: 50 },
-  { id: 3, name: "مرتقى الحجرات", startSurahId: 49, endSurahId: 39 },
-  { id: 4, name: "مرتقى ص", startSurahId: 38, endSurahId: 27 },
+  { id: 3, name: "مرتقى الزمر", startSurahId: 49, endSurahId: 39 },
+  { id: 4, name: "مرتقى النمل", startSurahId: 38, endSurahId: 27 },
   { id: 5, name: "مرتقى الكهف", startSurahId: 26, endSurahId: 18 },
-  { id: 6, name: "مرتقى الإسراء", startSurahId: 17, endSurahId: 10 },
-  { id: 7, name: "مرتقى التوبة", startSurahId: 9, endSurahId: 5 },
-  { id: 8, name: "مرتقى البقرة", startSurahId: 4, endSurahId: 1 }
+  { id: 6, name: "مرتقى يونس", startSurahId: 17, endSurahId: 10 },
+  { id: 7, name: "مرتقى المائدة", startSurahId: 9, endSurahId: 5 },
+  { id: 8, name: "مرتقى الفاتحة", startSurahId: 4, endSurahId: 1 }
 ];
 
 export interface SurahInfo {
