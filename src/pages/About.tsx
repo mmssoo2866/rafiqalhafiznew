@@ -71,6 +71,46 @@ const About: React.FC<AboutProps> = ({ onClose }) => {
               يوفر التطبيق عداداً تفاعلياً للحفظ الجديد، مما يشجع الحافظ على تكرار المقطع الجديد عدداً كافياً من المرات في يومه الأول لضمان جودة الحفظ من اللحظة الأولى.
             </p>
           </section>
+
+          <section className="space-y-4">
+            <h4 className="text-lg font-bold text-emerald-900 flex items-center gap-2">
+              <span className="w-2 h-8 bg-amber-500 rounded-full"></span>
+              نظام المرتقيات
+            </h4>
+            <p className="text-gray-600 leading-relaxed text-sm">
+              تنقسم رحلة الحفظ إلى 8 محطات كبرى تسمى "المرتقيات". لا يسمح التطبيق بالانتقال من مرتقى لآخر إلا بعد التأكيد اليدوي من الحافظ على إتقان المرحلة الحالية، مما يضمن صعوداً راسخاً في درجات الحفظ.
+            </p>
+          </section>
+
+          <section className="space-y-4">
+            <h4 className="text-lg font-bold text-emerald-900 flex items-center gap-2">
+              <span className="w-2 h-8 bg-amber-500 rounded-full"></span>
+              الحفظ السابق والإحصائيات
+            </h4>
+            <p className="text-gray-600 leading-relaxed text-sm">
+              يمكنك بسهولة إدراج محفوظاتك السابقة في النظام، وسيقوم التطبيق آلياً باحتساب عدد الآيات ونسبة الختمة الإجمالية، مع دمجها فوراً في جدول المراجعة والركعات.
+            </p>
+          </section>
+
+          <section className="space-y-4">
+            <h4 className="text-lg font-bold text-emerald-900 flex items-center gap-2">
+              <span className="w-2 h-8 bg-amber-500 rounded-full"></span>
+              دقة المواعيد بالـ GPS
+            </h4>
+            <p className="text-gray-600 leading-relaxed text-sm">
+              يتكامل التطبيق مع نظام تحديد المواقع العالمي لضبط مواقيت الصلاة بدقة متناهية حسب موقعك الجغرافي، مما يضمن توزيع الورد القرآني على أوقات العبادة الفعلية في يومك.
+            </p>
+          </section>
+
+          <section className="space-y-4">
+            <h4 className="text-lg font-bold text-emerald-900 flex items-center gap-2">
+              <span className="w-2 h-8 bg-amber-500 rounded-full"></span>
+              الخصوصية والبيانات
+            </h4>
+            <p className="text-gray-600 leading-relaxed text-sm">
+              بياناتك ملك لك وحدك. يتم تخزين جميع معلومات الحفظ محلياً على جهازك لضمان أعلى مستويات الخصوصية، مع توفير خاصية التصدير والاستيراد لسهولة نقل النسخ الاحتياطية.
+            </p>
+          </section>
         </div>
 
         <div className="bg-gray-50 rounded-3xl p-8 text-center space-y-4 border border-gray-100">
