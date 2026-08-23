@@ -132,7 +132,7 @@ export default function App() {
             <div className="w-10 h-10 bg-amber-500/10 border border-amber-500 rounded-xl flex items-center justify-center text-xl">📖</div>
             <div>
               <h1 className="text-xl font-bold font-serif flex items-center gap-2">
-                رفيق الحافظ <span className="text-[10px] px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full font-sans">v2.1.7</span>
+                رفيق الحافظ <span className="text-[10px] px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full font-sans">v2.1.5</span>
                 <button onClick={() => setActiveTab("about")} className="mr-2 px-3 py-1 bg-white/10 rounded-full text-[10px] font-bold">عن التطبيق</button>
               </h1>
               <p className="text-[10px] text-emerald-200">الجدولة التفاعلية والمراجعة المدمجة بالصلوات</p>
