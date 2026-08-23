@@ -91,7 +91,7 @@ const Mushaf: React.FC<MushafProps> = ({ state, todayStr, mushafPage, setMushafP
               value={mushafPage}
               onChange={(e) => {
                 const p = Number(e.target.value);
-                if (!isNaN(p)) setMushafPage(Math.max(1, Math.min(610, p)));
+                if (!isNaN(p)) setMushafPage(Math.max(1, Math.min(604, p)));
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-xl text-center font-mono font-bold focus:ring-2 focus:ring-emerald-600 outline-none"
             />
@@ -149,7 +149,7 @@ const Mushaf: React.FC<MushafProps> = ({ state, todayStr, mushafPage, setMushafP
             </div>
           )}
         </div>
-        <button onClick={() => mushafPage < 610 && setMushafPage(mushafPage + 1)} className="p-3 bg-[#e2dec9] hover:bg-[#d5d0b6] rounded-full shadow-inner"><ChevronLeft className="w-6 h-6" /></button>
+        <button onClick={() => mushafPage < 604 && setMushafPage(mushafPage + 1)} className="p-3 bg-[#e2dec9] hover:bg-[#d5d0b6] rounded-full shadow-inner"><ChevronLeft className="w-6 h-6" /></button>
       </div>
     </motion.div>
   );
