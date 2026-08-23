@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect, useRef } from "react";
 import { 
   BookOpen, 
   Clock,
@@ -93,13 +93,13 @@ export default function App() {
     }
   };
 
-  if (!state) return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-emerald-950 font-serif">جاري التحميل...</div>;
+  if (!state) return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-emerald-950 font-serif">ط¬ط§ط±ظٹ ط§ظ„طھط­ظ…ظٹظ„...</div>;
 
   // If onboarding is not completed, we show the onboarding screen and skip the dashboard logic to prevent crashes
   if (!state.onboardingCompleted) {
     const handleOnboardingSubmit = (data: any) => {
       const updated = { ...state, profile: { ...DEFAULT_PROFILE, ...data }, onboardingCompleted: true };
-      updateState(logActivity(updated, "التهيئة", "تم إعداد التطبيق بنجاح."));
+      updateState(logActivity(updated, "ط§ظ„طھظ‡ظٹط¦ط©", "طھظ… ط¥ط¹ط¯ط§ط¯ ط§ظ„طھط·ط¨ظٹظ‚ ط¨ظ†ط¬ط§ط­."));
     };
     return <Onboarding onSubmit={handleOnboardingSubmit} />;
   }
@@ -129,13 +129,13 @@ export default function App() {
       <header className="bg-emerald-900 text-white shadow-md p-4 shrink-0 border-b border-amber-500/20">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-amber-500/10 border border-amber-500 rounded-xl flex items-center justify-center text-xl">📖</div>
+            <div className="w-10 h-10 bg-amber-500/10 border border-amber-500 rounded-xl flex items-center justify-center text-xl">ًں“–</div>
             <div>
               <h1 className="text-xl font-bold font-serif flex items-center gap-2">
-                رفيق الحافظ <span className="text-[10px] px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full font-sans">v2.1.9</span>
-                <button onClick={() => setActiveTab("about")} className="mr-2 px-3 py-1 bg-white/10 rounded-full text-[10px] font-bold">عن التطبيق</button>
+                ط±ظپظٹظ‚ ط§ظ„ط­ط§ظپط¸ <span className="text-[10px] px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full font-sans">v2.2.0</span>
+                <button onClick={() => setActiveTab("about")} className="mr-2 px-3 py-1 bg-white/10 rounded-full text-[10px] font-bold">ط¹ظ† ط§ظ„طھط·ط¨ظٹظ‚</button>
               </h1>
-              <p className="text-[10px] text-emerald-200">الجدولة التفاعلية والمراجعة المدمجة بالصلوات</p>
+              <p className="text-[10px] text-emerald-200">ط§ظ„ط¬ط¯ظˆظ„ط© ط§ظ„طھظپط§ط¹ظ„ظٹط© ظˆط§ظ„ظ…ط±ط§ط¬ط¹ط© ط§ظ„ظ…ط¯ظ…ط¬ط© ط¨ط§ظ„طµظ„ظˆط§طھ</p>
             </div>
           </div>
 
@@ -145,11 +145,11 @@ export default function App() {
                 <Flame className="w-4 h-4 fill-amber-500" />
                 <span className="font-bold">{userProfile.streakDays}</span>
               </div>
-              <p className="text-[8px] text-emerald-200 uppercase">أيام</p>
+              <p className="text-[8px] text-emerald-200 uppercase">ط£ظٹط§ظ…</p>
             </div>
             <div className="px-3 text-center">
               <div className="font-bold text-amber-100">{state.blocks.length}</div>
-              <p className="text-[8px] text-emerald-200 uppercase">مقررات</p>
+              <p className="text-[8px] text-emerald-200 uppercase">ظ…ظ‚ط±ط±ط§طھ</p>
             </div>
           </div>
         </div>
@@ -177,15 +177,15 @@ export default function App() {
             className="fixed bottom-20 inset-x-4 z-50 bg-emerald-900 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between border border-emerald-700"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center text-xl shadow-inner">📖</div>
+              <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center text-xl shadow-inner">ًں“–</div>
               <div>
-                <h4 className="text-sm font-bold">ثبت رفيق الحافظ على جوالك</h4>
-                <p className="text-[10px] text-emerald-200">للوصول السريع وتجربة أفضل</p>
+                <h4 className="text-sm font-bold">ط«ط¨طھ ط±ظپظٹظ‚ ط§ظ„ط­ط§ظپط¸ ط¹ظ„ظ‰ ط¬ظˆط§ظ„ظƒ</h4>
+                <p className="text-[10px] text-emerald-200">ظ„ظ„ظˆطµظˆظ„ ط§ظ„ط³ط±ظٹط¹ ظˆطھط¬ط±ط¨ط© ط£ظپط¶ظ„</p>
               </div>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setShowInstallPrompt(false)} className="px-3 py-2 text-xs font-bold text-emerald-300">لاحقاً</button>
-              <button onClick={handleInstallClick} className="px-4 py-2 bg-amber-500 text-emerald-950 rounded-xl text-xs font-bold shadow-md">تثبيت الآن</button>
+              <button onClick={() => setShowInstallPrompt(false)} className="px-3 py-2 text-xs font-bold text-emerald-300">ظ„ط§ط­ظ‚ط§ظ‹</button>
+              <button onClick={handleInstallClick} className="px-4 py-2 bg-amber-500 text-emerald-950 rounded-xl text-xs font-bold shadow-md">طھط«ط¨ظٹطھ ط§ظ„ط¢ظ†</button>
             </div>
           </motion.div>
         )}
@@ -194,12 +194,12 @@ export default function App() {
       <footer className="fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 shadow-lg py-2 z-40">
         <div className="max-w-md mx-auto flex justify-around">
           {[
-            { id: "home", icon: Clock, label: "الرئيسية" },
-            ...(userProfile?.appTrack !== "review_only" ? [{ id: "hifz", icon: Plus, label: "الحفظ" }] : []),
-            { id: "review", icon: RotateCcw, label: "المراجعة" },
-            { id: "calendar", icon: CalendarIcon, label: "التقويم" },
-            { id: "mushaf", icon: BookOpen, label: "المصحف" },
-            { id: "settings", icon: SettingsIcon, label: "الإعدادات" }
+            { id: "home", icon: Clock, label: "ط§ظ„ط±ط¦ظٹط³ظٹط©" },
+            ...(userProfile?.appTrack !== "review_only" ? [{ id: "hifz", icon: Plus, label: "ط§ظ„ط­ظپط¸" }] : []),
+            { id: "review", icon: RotateCcw, label: "ط§ظ„ظ…ط±ط§ط¬ط¹ط©" },
+            { id: "calendar", icon: CalendarIcon, label: "ط§ظ„طھظ‚ظˆظٹظ…" },
+            { id: "mushaf", icon: BookOpen, label: "ط§ظ„ظ…طµط­ظپ" },
+            { id: "settings", icon: SettingsIcon, label: "ط§ظ„ط¥ط¹ط¯ط§ط¯ط§طھ" }
           ].map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id as TabType)} className={`flex flex-col items-center gap-1 transition ${activeTab === tab.id ? "text-emerald-700" : "text-gray-400"}`}>
               <tab.icon className="w-5 h-5" />
@@ -211,3 +211,4 @@ export default function App() {
     </div>
   );
 }
+

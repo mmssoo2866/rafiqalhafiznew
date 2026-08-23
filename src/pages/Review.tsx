@@ -1,8 +1,8 @@
-import React from "react";
+﻿import React from "react";
 import { motion } from "motion/react";
-import { RotateCcw, CheckCircle, Compass, Check, BookOpen } from "lucide-react";
+import { RotateCcw, Compass, Check, BookOpen, AlertCircle, CheckCircle } from "lucide-react";
 import { PageProps } from "../types";
-import { getSurahName, SURAHS } from "../quranData";
+import { getSurahName, MURTAGAS, SURAHS } from "../quranData";
 
 interface ReviewProps extends PageProps {
   todayTasks: any[];
@@ -12,6 +12,7 @@ interface ReviewProps extends PageProps {
   onUpdateReviewProgress: (idx: number) => void;
   onSetMushafPage?: (p: number) => void;
   onToggleTab: (tab: any) => void;
+  handlePassMurtaga: () => void;
 }
 
 const Review: React.FC<ReviewProps> = ({
@@ -20,11 +21,11 @@ const Review: React.FC<ReviewProps> = ({
   onNavigateToMushaf,
   todayTasks,
   onToggleReviewComplete,
-  cumulativeGroups,
   distributionSlots,
   onUpdateReviewProgress,
   onSetMushafPage,
-  onToggleTab
+  onToggleTab,
+  handlePassMurtaga
 }) => {
   const isReviewOnly = state.profile?.appTrack === "review_only";
   const currentProgress = state.reviewProgress[todayStr] || 0;
@@ -46,7 +47,7 @@ const Review: React.FC<ReviewProps> = ({
         </p>
       </div>
 
-      {/* RAKAH DISTRIBUTION MAP (Moved from Prayers Page) */}
+      {/* RAKAH DISTRIBUTION MAP */}
       <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-4">
         <h3 className="text-lg font-serif font-bold text-emerald-900 border-b pb-3 flex justify-between items-center">
           <span>📿 خريطة توزيع الركعات اليومية</span>
@@ -54,7 +55,7 @@ const Review: React.FC<ReviewProps> = ({
         </h3>
 
         {distributionSlots.length === 0 ? (
-          <p className="text-xs text-gray-400 text-center py-8">لا يوجد ورد مراجعة موزع على الصلوات حالياً.</p>
+          <p className="text-xs text-gray-400 text-center py-8">لا يوجد ورد مراجعة موزع حالياً.</p>
         ) : (
           <div className="space-y-6">
             <div className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100 flex justify-between items-center">
@@ -79,20 +80,16 @@ const Review: React.FC<ReviewProps> = ({
                     </div>
                     <div className="flex items-center gap-1">
                       <button onClick={() => {
-                        // Track 1 pattern: سورة البقرة (1-5)
                         const surahMatch = slot.assignedContent.match(/سورة ([\u0600-\u06FF]+)(?:\s+\((\d+))?/);
-                        // Track 2 pattern: ص (\d+)
                         const pageMatch = slot.assignedContent.match(/ص (\d+)/);
-
                         if (pageMatch && onSetMushafPage) {
                           onSetMushafPage(Number(pageMatch[1]));
                           onToggleTab("mushaf");
                         } else if (surahMatch) {
                           const found = SURAHS.find(s => s.name === surahMatch[1]);
-                          const ayah = surahMatch[2] ? Number(surahMatch[2]) : 1;
-                          if (found) onNavigateToMushaf(found.id, ayah);
+                          if (found) onNavigateToMushaf(found.id, surahMatch[2] ? Number(surahMatch[2]) : 1);
                         }
-                      }} className="p-1.5 bg-white border border-gray-200 rounded-lg text-emerald-700 shadow-sm hover:bg-emerald-50 transition"><BookOpen className="w-3.5 h-3.5" /></button>
+                      }} className="p-1.5 bg-white border border-gray-200 rounded-lg text-emerald-700 shadow-sm"><BookOpen className="w-3.5 h-3.5" /></button>
                       <button onClick={() => onUpdateReviewProgress(isCompleted ? idx : idx + 1)} className={`p-1.5 rounded-lg border transition-all ${isCompleted ? "bg-emerald-600 border-emerald-700 text-white" : "bg-white text-gray-400 border-gray-300"}`}><Check className="w-3.5 h-3.5" /></button>
                     </div>
                   </div>
@@ -104,66 +101,95 @@ const Review: React.FC<ReviewProps> = ({
       </div>
 
       {!isReviewOnly && (
-        /* ORIGINAL TRACK 1 REVIEW LISTS (Only for Hifz Track) */
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-4">
-              <h4 className="text-lg font-serif font-bold text-emerald-900 border-b pb-2">🔥 مراجعة مكثفة (2-10)</h4>
-              {todayTasks.filter(t => t.type === "review" && t.offset <= 10).length === 0 ? (
-                <p className="text-xs text-gray-400 text-center py-8">لا يوجد مراجعات مكثفة اليوم.</p>
-              ) : (
-                <div className="space-y-2">
-                  {todayTasks.filter(t => t.type === "review" && t.offset <= 10).map(t => (
-                    <div key={t.block.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                      <span className="text-xs font-bold">سورة {getSurahName(t.block.surahId)}</span>
-                      <button onClick={() => onToggleReviewComplete(t.block.id)} className={`px-3 py-1 rounded-lg text-xs font-bold ${t.isCompleted ? "bg-emerald-600 text-white" : "bg-white border text-gray-700"}`}>{t.isCompleted ? "✓" : "إتمام"}</button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+        /* MURTAGAS SECTION (Replacing Cumulative Groups) */
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-6">
+          <h3 className="text-xl font-serif font-bold text-emerald-900 border-b pb-3 flex justify-between items-center">
+            <span>🏆 المرتقيات</span>
+            <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold">المرتقى {state.profile?.currentMurtagaId || 1}</span>
+          </h3>
 
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-4">
-              <h4 className="text-lg font-serif font-bold text-emerald-900 border-b pb-2">🌌 مراجعة متباعدة (12-66)</h4>
-              {todayTasks.filter(t => t.type === "review" && t.offset > 10).length === 0 ? (
-                <p className="text-xs text-gray-400 text-center py-8">لا توجد مراجعات متباعدة اليوم.</p>
-              ) : (
-                <div className="space-y-2">
-                  {todayTasks.filter(t => t.type === "review" && t.offset > 10).map(t => (
-                    <div key={t.block.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                      <span className="text-xs font-bold">سورة {getSurahName(t.block.surahId)}</span>
-                      <button onClick={() => onToggleReviewComplete(t.block.id)} className={`px-3 py-1 rounded-lg text-xs font-bold ${t.isCompleted ? "bg-emerald-600 text-white" : "bg-white border text-gray-700"}`}>{t.isCompleted ? "✓" : "إتمام"}</button>
-                    </div>
-                  ))}
+          {state.profile?.isInMasteryPhase && (
+            <div className="bg-amber-50 border border-amber-200 p-5 rounded-2xl space-y-4">
+              <div className="flex items-center gap-3 text-amber-800">
+                <AlertCircle className="w-6 h-6" />
+                <div className="text-right">
+                  <h4 className="font-bold text-sm">مرحلة الإتقان والمراجعة</h4>
+                  <p className="text-[10px] opacity-80">لقد وصلت لنهاية المرتقى الحالي. تم إيقاف الحفظ الجديد لتمكينك من تثبيت ما سبق.</p>
                 </div>
-              )}
+              </div>
+              <button 
+                onClick={handlePassMurtaga}
+                className="w-full py-3 bg-amber-600 text-white rounded-xl font-bold text-sm shadow-md hover:bg-amber-700 transition-all flex items-center justify-center gap-2"
+              >
+                <span>أتممت المرتقى الحالي وأتقنتُه</span>
+                <CheckCircle className="w-4 h-4" />
+              </button>
             </div>
+          )}
+
+          <div className="space-y-4">
+            {MURTAGAS.filter(m => 
+              (state.profile?.masteredMurtagaIds || []).includes(m.id) || m.id === (state.profile?.currentMurtagaId || 1)
+            ).map((m) => {
+              const isMastered = (state.profile?.masteredMurtagaIds || []).includes(m.id);
+              return (
+                <div key={m.id} className={`p-5 rounded-2xl border transition-all ${isMastered ? "bg-emerald-50/50 border-emerald-100 opacity-80" : "bg-white border-emerald-50 shadow-sm"}`}>
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className={`font-bold ${isMastered ? "text-emerald-800" : "text-gray-900"}`}>
+                      {isMastered ? "✓ " : "◉ "}{m.name}
+                    </h4>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-lg font-bold ${isMastered ? "bg-emerald-100 text-emerald-700" : "bg-blue-50 text-blue-700"}`}>
+                      {isMastered ? "تم الاجتياز" : "جارٍ العمل"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                     <p className="text-xs text-gray-500">من {getSurahName(m.startSurahId)} إلى {getSurahName(m.endSurahId)}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
+        </div>
+      )}
 
+      {!isReviewOnly && (
+        /* DAILY REVIEWS */
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-4">
-            <h3 className="text-lg font-serif font-bold text-emerald-900 border-b pb-3">🧠 المجموعات التراكمية الكبرى</h3>
-            {cumulativeGroups.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-6">سيتم تعيين المجموعات تلقائياً عند إضافة المزيد من المقررات.</p>
+            <h4 className="text-lg font-serif font-bold text-emerald-900 border-b pb-2">🔥 مراجعة مكثفة (2-10)</h4>
+            {todayTasks.filter(t => t.type === "review" && t.offset <= 10).length === 0 ? (
+              <p className="text-xs text-gray-400 text-center py-8">لا يوجد مراجعات مكثفة اليوم.</p>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {cumulativeGroups.map(g => (
-                  <div key={g.id} className="p-4 bg-emerald-50/20 border border-emerald-100 rounded-2xl space-y-3">
-                    <div className="justify-between font-bold text-sm text-emerald-950 flex items-center">
-                      <span>{g.name}</span>
-                      <span className="bg-emerald-100 px-2 rounded">{g.blocks.length}</span>
-                    </div>
-                    <button onClick={() => onNavigateToMushaf(g.blocks[0].surahId, g.blocks[0].fromAyah)} className="w-full py-2 bg-emerald-700 text-white rounded-xl text-xs font-bold">مراجعة المجموعة بالمصحف 📖</button>
+              <div className="space-y-2">
+                {todayTasks.filter(t => t.type === "review" && t.offset <= 10).map(t => (
+                  <div key={t.block.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                    <span className="text-xs font-bold">سورة {getSurahName(t.block.surahId)}</span>
+                    <button onClick={() => onToggleReviewComplete(t.block.id)} className={`px-3 py-1 rounded-lg text-xs font-bold ${t.isCompleted ? "bg-emerald-600 text-white" : "bg-white border text-gray-700"}`}>{t.isCompleted ? "✓" : "إتمام"}</button>
                   </div>
                 ))}
               </div>
             )}
           </div>
-        </>
+
+          <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-4">
+            <h4 className="text-lg font-serif font-bold text-emerald-900 border-b pb-2">🌌 مراجعة متباعدة (12-66)</h4>
+            {todayTasks.filter(t => t.type === "review" && t.offset > 10).length === 0 ? (
+              <p className="text-xs text-gray-400 text-center py-8">لا توجد مراجعات متباعدة اليوم.</p>
+            ) : (
+              <div className="space-y-2">
+                {todayTasks.filter(t => t.type === "review" && t.offset > 10).map(t => (
+                  <div key={t.block.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                    <span className="text-xs font-bold">سورة {getSurahName(t.block.surahId)}</span>
+                    <button onClick={() => onToggleReviewComplete(t.block.id)} className={`px-3 py-1 rounded-lg text-xs font-bold ${t.isCompleted ? "bg-emerald-600 text-white" : "bg-white border text-gray-700"}`}>{t.isCompleted ? "✓" : "إتمام"}</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </motion.div>
   );
 };
 
 export default Review;
-
-
