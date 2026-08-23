@@ -51,7 +51,7 @@ export interface UserProfile {
   mainReviewDailyAmountValue?: number; // v2.1: separated from reviewOnlyDailyAmountValue
   mainReviewProgressPages?: number;
   reviewStartPoint: string;
-  enabledPrayers?: string[]; // v2.1.2: user selected prayers for review
+  enabledPrayers?: string[];`n  currentMurtagaId?: number;`n  masteredMurtagaIds?: number[];`n  isInMasteryPhase?: boolean; // v2.1.2: user selected prayers for review
   activeDays?: number[]; // v2.1.3: 0-6 (Sun-Sat)
 }
 
@@ -126,7 +126,7 @@ export const DEFAULT_PROFILE: UserProfile = {
   mainReviewDailyAmountValue: 10, // Default 10 pages for main review
   mainReviewProgressPages: 0,
   reviewStartPoint: 'fajr',
-  enabledPrayers: ['fajr', 'duha', 'dhuhr', 'asr', 'maghrib', 'isha', 'qiyam'],
+  enabledPrayers: ["fajr", "duha", "dhuhr", "asr", "maghrib", "isha", "qiyam"],`n  currentMurtagaId: 1,`n  masteredMurtagaIds: [],`n  isInMasteryPhase: false,
   activeDays: [0, 1, 2, 3, 4, 5, 6]
 };
 

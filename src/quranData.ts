@@ -1,3 +1,21 @@
+export interface MurtagaInfo {
+  id: number;
+  name: string;
+  endSurahId: number; // The target Surah to reach the Mastery Phase
+  startSurahId: number; // The beginning of the Murtaga
+}
+
+export const MURTAGAS: MurtagaInfo[] = [
+  { id: 1, name: "„— ﬁÏ «·„·ﬂ", startSurahId: 114, endSurahId: 67 },
+  { id: 2, name: "„— ﬁÏ ﬁ", startSurahId: 66, endSurahId: 50 },
+  { id: 3, name: "„— ﬁÏ «·“„—", startSurahId: 49, endSurahId: 39 },
+  { id: 4, name: "„— ﬁÏ «·‰„·", startSurahId: 38, endSurahId: 27 },
+  { id: 5, name: "„— ﬁÏ «·ﬂÂ›", startSurahId: 26, endSurahId: 18 },
+  { id: 6, name: "„— ﬁÏ ÌÊ‰”", startSurahId: 17, endSurahId: 10 },
+  { id: 7, name: "„— ﬁÏ «·„«∆œ…", startSurahId: 9, endSurahId: 5 },
+  { id: 8, name: "„— ﬁÏ «·›« Õ…", startSurahId: 4, endSurahId: 1 }
+];
+
 export interface SurahInfo {
   id: number;
   name: string;
@@ -254,3 +272,4 @@ export function getSurahForPage(page: number): string {
   }
   return found.name;
 }
+

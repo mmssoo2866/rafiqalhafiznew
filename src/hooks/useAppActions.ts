@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { AppState, UserProfile, loadAppState, saveAppState, logActivity, getLocalDateKey, formatDateKey, MemorizationBlock, CompletedReviews } from "../storage";
-import { getSurahById, getSurahName, getPageForAyah } from "../quranData";
+import { MURTAGAS, getSurahById, getSurahName, getPageForAyah } from "../quranData";
 
 export const useAppActions = () => {
   const [state, setState] = useState<AppState | null>(null);
@@ -39,7 +39,19 @@ export const useAppActions = () => {
       newStreak = 1;
     }
 
-    return {
+      const handlePassMurtaga = useCallback(() => {
+    if (!state || !state.profile) return;
+    const currentId = state.profile.currentMurtagaId || 1;
+    const updatedProfile = {
+      ...state.profile,
+      masteredMurtagaIds: [...(state.profile.masteredMurtagaIds || []), currentId],
+      currentMurtagaId: currentId + 1,
+      isInMasteryPhase: false
+    };
+    updateState(logActivity({ ...state, profile: updatedProfile }, "ÇÌÊíÇÒ ãÑÊÞì", `åäíÆÇð áß! Êã ÇÌÊíÇÒ ${MURTAGAS.find(m => m.id === currentId)?.name} ÈäÌÇÍ.`));
+  }, [state, updateState]);
+
+  return {
       ...currentState,
       profile: {
         ...currentState.profile,
@@ -180,7 +192,7 @@ export const useAppActions = () => {
     });
   }, [state, updateState]);
 
-  const handleResetApp = useCallback(() => {
+  const handleResetApp,`n    handlePassMurtaga = useCallback(() => {
     if (!window.confirm("Ù‡Ù„ Ø£Ù†Øª Ù…ØªØ£ÙƒØ¯ Ù…Ù† Ø­Ø°Ù ÙƒØ§ÙØ© Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª ÙˆØ¥Ø¹Ø§Ø¯Ø© Ø¶Ø¨Ø· Ø§Ù„ØªØ·Ø¨ÙŠÙ‚ØŸ Ù„Ø§ ÙŠÙ…ÙƒÙ† Ø§Ù„ØªØ±Ø§Ø¬Ø¹ Ø¹Ù† Ù‡Ø°Ø§ Ø§Ù„Ø¥Ø¬Ø±Ø§Ø¡.")) return;
 
     const newState: AppState = {
@@ -323,6 +335,18 @@ export const useAppActions = () => {
     updateState(logActivity({ ...updatedState, profile: updatedProfile }, "Ø¥Ù†Ø¬Ø§Ø² ÙˆØ±Ø¯ Ø§Ù„Ù…Ø±Ø§Ø¬Ø¹Ø©", `ØªÙ… Ø¥ØªÙ…Ø§Ù… Ù…Ø±Ø§Ø¬Ø¹Ø© Ø§Ù„ÙŠÙˆÙ… Ø¨Ù†Ø¬Ø§Ø­.`));
   }, [state, updateState, incrementStreakIfNeeded]);
 
+    const handlePassMurtaga = useCallback(() => {
+    if (!state || !state.profile) return;
+    const currentId = state.profile.currentMurtagaId || 1;
+    const updatedProfile = {
+      ...state.profile,
+      masteredMurtagaIds: [...(state.profile.masteredMurtagaIds || []), currentId],
+      currentMurtagaId: currentId + 1,
+      isInMasteryPhase: false
+    };
+    updateState(logActivity({ ...state, profile: updatedProfile }, "ÇÌÊíÇÒ ãÑÊÞì", `åäíÆÇð áß! Êã ÇÌÊíÇÒ ${MURTAGAS.find(m => m.id === currentId)?.name} ÈäÌÇÍ.`));
+  }, [state, updateState]);
+
   return {
     state,
     setState,
@@ -336,8 +360,10 @@ export const useAppActions = () => {
     handleToggleBlockStatus,
     handleDetectLocation,
     handleCompleteKhatmahReviewToday,
-    handleResetApp,
+    handleResetApp,`n    handlePassMurtaga,
     handleExportBackup,
     handleImportBackup
   };
 };
+
+

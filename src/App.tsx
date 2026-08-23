@@ -51,7 +51,7 @@ export default function App() {
     handleToggleBlockStatus,
     handleDetectLocation,
     handleCompleteKhatmahReviewToday,
-    handleResetApp,
+    handleResetApp,`n    handlePassMurtaga,
     handleExportBackup,
     handleImportBackup
   } = useAppActions();
@@ -157,12 +157,12 @@ export default function App() {
 
       <main className="flex-1 max-w-6xl w-full mx-auto p-4 overflow-y-auto pb-24">
         <AnimatePresence mode="wait">
-          {activeTab === "home" && <Home {...commonProps} onDetectLocation={handleDetectLocation} gpsLoading={gpsLoading} prayerTimesList={prayerTimesList} todayTasks={todayTasks} repetitions={state.repetitions} onDecrementRepetition={handleDecrementRepetition} onToggleReviewComplete={handleToggleReviewComplete} onCompleteDay66={handleCompleteDay66} hasDay66={hasDay66TriggerToday(state, todayStr)} distributionSlots={distributionSlots} onCompleteKhatmahReview={handleCompleteKhatmahReviewToday} onUpdateProfile={updateProfile} />}
+          {activeTab === "home" && <Home {...commonProps} onDetectLocation={handleDetectLocation} gpsLoading={gpsLoading} prayerTimesList={prayerTimesList} todayTasks={todayTasks} repetitions={state.repetitions} onDecrementRepetition={handleDecrementRepetition} onToggleReviewComplete={handleToggleReviewComplete} onCompleteDay66={handleCompleteDay66} hasDay66={hasDay66TriggerToday(state, todayStr)} distributionSlots={distributionSlots}`n            handlePassMurtaga={handlePassMurtaga} onCompleteKhatmahReview={handleCompleteKhatmahReviewToday} onUpdateProfile={updateProfile} />}
           {activeTab === "hifz" && <Hifz {...commonProps} newHifz={newHifz} setNewHifz={setNewHifz} onAddHifz={(e) => { e.preventDefault(); handleAddHifz(newHifz.surahId, newHifz.fromAyah, newHifz.toAyah, newHifz.repetitions, newHifz.startDate); }} onDeleteBlock={handleDeleteBlock} onToggleBlockStatus={handleToggleBlockStatus} deletingBlockId={deletingBlockId} setDeletingBlockId={setDeletingBlockId} />}
-          {activeTab === "review" && <Review {...commonProps} todayTasks={todayTasks} onToggleReviewComplete={handleToggleReviewComplete} cumulativeGroups={getCumulativeGroups(state.blocks)} distributionSlots={distributionSlots} onUpdateReviewProgress={handleUpdateReviewProgress} />}
+          {activeTab === "review" && <Review {...commonProps} todayTasks={todayTasks} onToggleReviewComplete={handleToggleReviewComplete} cumulativeGroups={getCumulativeGroups(state.blocks)} distributionSlots={distributionSlots}`n            handlePassMurtaga={handlePassMurtaga} onUpdateReviewProgress={handleUpdateReviewProgress} />}
           {activeTab === "calendar" && <Calendar {...commonProps} />}
           {activeTab === "mushaf" && <Mushaf {...commonProps} mushafPage={mushafPage} setMushafPage={setMushafPage} mushafViewMode={mushafViewMode} setMushafViewMode={setMushafViewMode} />}
-          {activeTab === "settings" && <Settings {...commonProps} onExportBackup={handleExportBackup} onImportBackup={handleImportBackup} onResetApp={handleResetApp} />}
+          {activeTab === "settings" && <Settings {...commonProps} onExportBackup={handleExportBackup} onImportBackup={handleImportBackup} onResetApp={handleResetApp,`n    handlePassMurtaga} />}
           {activeTab === "about" && <About onClose={() => setActiveTab("home")} />}
         </AnimatePresence>
       </main>
