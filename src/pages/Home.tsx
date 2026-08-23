@@ -49,8 +49,7 @@ const Home: React.FC<HomeProps> = ({
   onUpdateProfile
 }) => {
   const userProfile = state.profile!;
-  const currentBlocksAyahs = state.blocks.reduce((sum, b) => sum + (Math.abs(b.toAyah - b.fromAyah) + 1), 0);
-  const totalMemorizedAyahs = currentBlocksAyahs + (userProfile.previousHifzAyahsCount || 0);
+  const totalMemorizedAyahs = state.blocks.reduce((sum, b) => sum + (Math.abs(b.toAyah - b.fromAyah) + 1), 0);
   const quranCompletionPercent = ((Math.min(totalMemorizedAyahs, 6236) / 6236) * 100).toFixed(1);
   const totalCompletedReviewsCount = Object.values(state.completedReviews).reduce((sum: number, arr) => sum + (arr as string[]).length, 0);
 

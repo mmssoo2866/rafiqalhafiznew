@@ -186,11 +186,20 @@ export const useAppActions = () => {
   }, [state, updateState]);
 
   const handleDetectLocation = useCallback(() => {
-    if (!state || !state.profile || !navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition((pos) => {
-      const updated = { ...state, profile: { ...state.profile!, lat: pos.coords.latitude, lng: pos.coords.longitude } };
-      updateState(logActivity(updated, "تحديث الموقع", "تم تحديث إحداثيات الموقع."));
-    });
+    if (!state || !state.profile || !navigator.geolocation) {
+      alert("خاصية تحديد الموقع غير مدعومة في هذا المتصفح.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const updated = { ...state, profile: { ...state.profile!, lat: pos.coords.latitude, lng: pos.coords.longitude } };
+        updateState(logActivity(updated, "تحديث الموقع", `تم تحديث إحداثيات الموقع: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`));
+        alert("تم تحديث الموقع بنجاح ومزامنة مواقيت الصلاة.");
+      },
+      (err) => {
+        alert("فشل تحديد الموقع. يرجى التأكد من تفعيل الصلاحيات.");
+      }
+    );
   }, [state, updateState]);
 
   const handleResetApp = useCallback(() => {
@@ -228,18 +237,26 @@ export const useAppActions = () => {
         await writable.write(dataStr);
         await writable.close();
         setState(prev => prev ? logActivity(prev, "تصدير البيانات", "تم حفظ النسخة الاحتياطية بنجاح.") : null);
+        alert("تم تصدير البيانات بنجاح.");
         return;
       } catch (err: any) {
         if (err.name === 'AbortError') return;
       }
     }
 
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    // Fallback logic improved by appending to document
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
     const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.href = url;
+    linkElement.download = exportFileDefaultName;
+    document.body.appendChild(linkElement);
     linkElement.click();
+    document.body.removeChild(linkElement);
+    URL.revokeObjectURL(url);
+
     setState(prev => prev ? logActivity(prev, "تصدير البيانات", "تم تصدير النسخة الاحتياطية بنجاح.") : null);
+    alert("تم تصدير ملف النسخة الاحتياطية بنجاح.");
   }, [state]);
 
   const handleImportBackup = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

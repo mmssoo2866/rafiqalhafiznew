@@ -205,7 +205,15 @@ export function buildPrayerSlots(profile: UserProfile): {
 
   finalOrder.forEach(blockKey => {
     blocks[blockKey].forEach(groupKey => {
-      slots.push(...groups[groupKey]);
+      const groupSlots = groups[groupKey];
+      // Logic: If user is Maamoom, they don't read in Fard of Loud prayers (Fajr, Maghrib, Isha)
+      const filtered = groupSlots.filter(s => {
+        if (profile.prayerRole === 'maamoom' && s.type === 'fard') {
+          if (['الفجر', 'المغرب', 'العشاء'].includes(s.parentPrayer)) return false;
+        }
+        return true;
+      });
+      slots.push(...filtered);
     });
   });
 

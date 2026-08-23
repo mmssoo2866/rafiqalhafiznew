@@ -1,8 +1,9 @@
-﻿import React from "react";
-import { motion } from "motion/react";
-import { RotateCcw, Compass, Check, BookOpen, AlertCircle, CheckCircle } from "lucide-react";
+﻿import React, { useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { RotateCcw, Compass, Check, BookOpen, AlertCircle, CheckCircle, Info, X } from "lucide-react";
 import { PageProps } from "../types";
 import { getSurahName, MURTAGAS, SURAHS } from "../quranData";
+import { ALL_REVIEW_DAYS, getDaysOffset } from "../scheduler";
 
 interface ReviewProps extends PageProps {
   todayTasks: any[];
@@ -29,6 +30,9 @@ const Review: React.FC<ReviewProps> = ({
 }) => {
   const isReviewOnly = state.profile?.appTrack === "review_only";
   const currentProgress = state.reviewProgress[todayStr] || 0;
+  const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+
+  const selectedBlock = state.blocks.find(b => b.id === selectedBlockId);
 
   return (
     <motion.div
@@ -162,9 +166,12 @@ const Review: React.FC<ReviewProps> = ({
             ) : (
               <div className="space-y-2">
                 {todayTasks.filter(t => t.type === "review" && t.offset <= 10).map(t => (
-                  <div key={t.block.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                    <span className="text-xs font-bold">سورة {getSurahName(t.block.surahId)}</span>
-                    <button onClick={() => onToggleReviewComplete(t.block.id)} className={`px-3 py-1 rounded-lg text-xs font-bold ${t.isCompleted ? "bg-emerald-600 text-white" : "bg-white border text-gray-700"}`}>{t.isCompleted ? "✓" : "إتمام"}</button>
+                  <div key={t.block.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all cursor-pointer" onClick={() => setSelectedBlockId(t.block.id)}>
+                    <div className="flex items-center gap-2">
+                      <Info className="w-3.5 h-3.5 text-emerald-600" />
+                      <span className="text-xs font-bold">سورة {getSurahName(t.block.surahId)}</span>
+                    </div>
+                    <button onClick={(e) => { e.stopPropagation(); onToggleReviewComplete(t.block.id); }} className={`px-3 py-1 rounded-lg text-xs font-bold ${t.isCompleted ? "bg-emerald-600 text-white" : "bg-white border text-gray-700"}`}>{t.isCompleted ? "✓" : "إتمام"}</button>
                   </div>
                 ))}
               </div>
@@ -178,9 +185,12 @@ const Review: React.FC<ReviewProps> = ({
             ) : (
               <div className="space-y-2">
                 {todayTasks.filter(t => t.type === "review" && t.offset > 10).map(t => (
-                  <div key={t.block.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                    <span className="text-xs font-bold">سورة {getSurahName(t.block.surahId)}</span>
-                    <button onClick={() => onToggleReviewComplete(t.block.id)} className={`px-3 py-1 rounded-lg text-xs font-bold ${t.isCompleted ? "bg-emerald-600 text-white" : "bg-white border text-gray-700"}`}>{t.isCompleted ? "✓" : "إتمام"}</button>
+                  <div key={t.block.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all cursor-pointer" onClick={() => setSelectedBlockId(t.block.id)}>
+                    <div className="flex items-center gap-2">
+                      <Info className="w-3.5 h-3.5 text-emerald-600" />
+                      <span className="text-xs font-bold">سورة {getSurahName(t.block.surahId)}</span>
+                    </div>
+                    <button onClick={(e) => { e.stopPropagation(); onToggleReviewComplete(t.block.id); }} className={`px-3 py-1 rounded-lg text-xs font-bold ${t.isCompleted ? "bg-emerald-600 text-white" : "bg-white border text-gray-700"}`}>{t.isCompleted ? "✓" : "إتمام"}</button>
                   </div>
                 ))}
               </div>
@@ -188,6 +198,49 @@ const Review: React.FC<ReviewProps> = ({
           </div>
         </div>
       )}
+
+      {/* SCHEDULE DETAILS MODAL */}
+      <AnimatePresence>
+        {selectedBlock && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl">
+              <div className="bg-emerald-800 p-6 text-white flex justify-between items-center">
+                <div>
+                  <h4 className="text-xl font-serif font-bold">جدول مراجعة {getSurahName(selectedBlock.surahId)}</h4>
+                  <p className="text-[10px] text-emerald-200">تاريخ البدء: {selectedBlock.startDate}</p>
+                </div>
+                <button onClick={() => setSelectedBlockId(null)} className="p-2 bg-white/10 rounded-full hover:bg-white/20"><X className="w-5 h-5" /></button>
+              </div>
+              <div className="p-6 space-y-4">
+                <p className="text-xs text-gray-500 mb-4">المواعيد المقررة للمراجعة حسب نظام التكرار المتباعد:</p>
+                <div className="grid grid-cols-4 gap-2">
+                  {ALL_REVIEW_DAYS.map(day => {
+                    const currentOffset = getDaysOffset(selectedBlock.startDate, todayStr, state.fullReviewDates, state.profile?.activeDays);
+                    const isPast = currentOffset > day;
+                    const isToday = currentOffset === day;
+                    return (
+                      <div key={day} className={`p-2 rounded-xl text-center border transition-all ${isToday ? "bg-amber-100 border-amber-500 shadow-sm" : isPast ? "bg-emerald-50 border-emerald-100 opacity-60" : "bg-gray-50 border-gray-100"}`}>
+                        <div className="text-[10px] font-bold text-gray-400">يوم</div>
+                        <div className={`text-sm font-bold ${isToday ? "text-amber-700" : "text-emerald-900"}`}>{day}</div>
+                        {isToday && <div className="text-[8px] font-bold text-amber-600 mt-1">اليوم</div>}
+                        {isPast && <div className="text-[8px] font-bold text-emerald-600 mt-1">تمت</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="pt-4 border-t border-gray-100">
+                  <div className="flex justify-between items-center bg-gray-50 p-3 rounded-2xl">
+                    <span className="text-xs font-bold text-gray-600">الحالة الحالية:</span>
+                    <span className="text-xs font-bold text-emerald-700 bg-white px-3 py-1 rounded-lg border border-emerald-100">
+                      اليوم {getDaysOffset(selectedBlock.startDate, todayStr, state.fullReviewDates, state.profile?.activeDays)} من الحفظ
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

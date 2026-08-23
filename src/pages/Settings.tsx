@@ -24,6 +24,37 @@ const Settings: React.FC<SettingsProps> = ({ state, onUpdateState, onExportBacku
     const minS = Math.min(prevFrom, prevTo);
     const maxS = Math.max(prevFrom, prevTo);
 
+    // 1. Calculate ayahs count and create blocks
+    let totalAyahs = 0;
+    const newBlocks: any[] = [];
+    const sixtySixDaysAgo = new Date();
+    sixtySixDaysAgo.setDate(sixtySixDaysAgo.getDate() - 65); // Day 66 relative to today
+    const pastDateStr = logActivity({} as any, "", "").activityLog[0].timestamp.split(' ')[0]; // Helper to get key
+    // Actually use formatDateKey
+    const d = new Date();
+    d.setDate(d.getDate() - 65);
+    const sixtySixDaysAgoStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+    for (let i = minS; i <= maxS; i++) {
+      const s = SURAHS.find(surah => surah.id === i);
+      if (s) {
+        totalAyahs += s.ayahs;
+        // Check if block already exists
+        if (!state.blocks.some(b => b.surahId === i)) {
+          newBlocks.push({
+            id: `prev-hifz-${i}-${Date.now()}`,
+            surahId: i,
+            fromAyah: 1,
+            toAyah: s.ayahs,
+            repetitionTarget: 0, // Already mastered
+            startDate: sixtySixDaysAgoStr,
+            status: "completed"
+          });
+        }
+      }
+    }
+
+    // 2. Identify mastered murtagas
     const newlyMastered = MURTAGAS.filter(m =>
       m.startSurahId >= minS && m.startSurahId <= maxS &&
       m.endSurahId >= minS && m.endSurahId <= maxS
@@ -35,32 +66,21 @@ const Settings: React.FC<SettingsProps> = ({ state, onUpdateState, onExportBacku
     let nextCurrent = userProfile.currentMurtagaId || 1;
     if (combined.length > 0) {
       const highestMastered = Math.max(...combined);
-      if (highestMastered < 8) {
-        nextCurrent = highestMastered + 1;
-      } else {
-        nextCurrent = 8;
-      }
-    }
-
-    // Calculate total ayahs in range [minS, maxS]
-    let totalAyahsInRange = 0;
-    for (let i = minS; i <= maxS; i++) {
-      const s = SURAHS.find(x => x.id === i);
-      if (s) totalAyahsInRange += s.ayahs;
+      nextCurrent = highestMastered < 8 ? highestMastered + 1 : 8;
     }
 
     const updated = logActivity({
       ...state,
+      blocks: [...state.blocks, ...newBlocks],
       profile: {
         ...userProfile,
         masteredMurtagaIds: combined,
-        currentMurtagaId: nextCurrent,
-        previousHifzAyahsCount: totalAyahsInRange
+        currentMurtagaId: nextCurrent
       }
-    }, "تحديث الحفظ السابق", `تم إدراج المرتقيات بناءً على الحفظ من ${getSurahName(prevFrom)} إلى ${getSurahName(prevTo)} (${totalAyahsInRange} آية)`);
+    }, "تحديث الحفظ السابق", `تم إدراج ${newBlocks.length} سور سابقة (${totalAyahs} آية) واعتبارها في اليوم 66 للمراجعة.`);
 
     onUpdateState(updated);
-    alert(`تم تحديث المرتقيات بنجاح! تم احتساب ${totalAyahsInRange} آية في سجل إنجازاتك.`);
+    alert(`تم تحديث المرتقيات بنجاح! تم إضافة ${newBlocks.length} سور لسجل حفظك واحتساب ${totalAyahs} آية في تقدمك العام.`);
   };
 
   return (

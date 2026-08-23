@@ -97,8 +97,28 @@ export default function App() {
 
   if (!state.onboardingCompleted) {
     const handleOnboardingSubmit = (data: any) => {
-      const updated = { ...state, profile: { ...DEFAULT_PROFILE, ...data }, onboardingCompleted: true };
-      updateState(logActivity(updated, "التهيئة", "تم إعداد التطبيق بنجاح."));
+      // Seed a sample block starting yesterday so Day 2 review triggers today
+      const d = new Date();
+      d.setDate(d.getDate() - 1);
+      const yesterdayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+      const sampleBlock = {
+        id: `block-initial-${Date.now()}`,
+        surahId: 1, // Al-Fatihah
+        fromAyah: 1,
+        toAyah: 7,
+        repetitionTarget: 20,
+        startDate: yesterdayStr,
+        status: "active"
+      };
+
+      const updated = {
+        ...state,
+        profile: { ...DEFAULT_PROFILE, ...data },
+        onboardingCompleted: true,
+        blocks: [sampleBlock]
+      };
+      updateState(logActivity(updated, "التهيئة", "تم إعداد التطبيق بنجاح مع مقرر الفاتحة للمراجعة الأولية."));
     };
     return <Onboarding onSubmit={handleOnboardingSubmit} />;
   }
