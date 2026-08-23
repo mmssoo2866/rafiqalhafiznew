@@ -58,6 +58,8 @@ export interface UserProfile {
   activeDays?: number[];
   previousHifzAyahsCount?: number;
 }
+  previousHifzAyahsCount?: number;
+}
 
 export interface MemorizationBlock {
   id: string;
