@@ -56,6 +56,7 @@ export interface UserProfile {
   masteredMurtagaIds?: number[];
   isInMasteryPhase?: boolean;
   activeDays?: number[];
+  previousHifzAyahsCount?: number;
 }
 
 export interface MemorizationBlock {

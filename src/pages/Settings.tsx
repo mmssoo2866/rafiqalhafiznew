@@ -42,14 +42,22 @@ const Settings: React.FC<SettingsProps> = ({ state, onUpdateState, onExportBacku
       }
     }
 
+    // Calculate total ayahs in range [minS, maxS]
+    let totalAyahsInRange = 0;
+    for (let i = minS; i <= maxS; i++) {
+      const s = SURAHS.find(x => x.id === i);
+      if (s) totalAyahsInRange += s.ayahs;
+    }
+
     const updated = logActivity({
       ...state,
       profile: {
         ...userProfile,
         masteredMurtagaIds: combined,
-        currentMurtagaId: nextCurrent
+        currentMurtagaId: nextCurrent,
+        previousHifzAyahsCount: totalAyahsInRange
       }
-    }, "تحديث الحفظ السابق", `تم إدراج المرتقيات بناءً على الحفظ من ${getSurahName(prevFrom)} إلى ${getSurahName(prevTo)}`);
+    }, "تحديث الحفظ السابق", `تم إدراج المرتقيات بناءً على الحفظ من ${getSurahName(prevFrom)} إلى ${getSurahName(prevTo)} (${totalAyahsInRange} آية)`);
 
     onUpdateState(updated);
     alert("تم تحديث المرتقيات بنجاح! يمكنك مراجعة الإنجازات في صفحة المراجعة.");

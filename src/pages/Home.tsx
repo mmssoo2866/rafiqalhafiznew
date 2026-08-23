@@ -49,8 +49,8 @@ const Home: React.FC<HomeProps> = ({
   onUpdateProfile
 }) => {
   const userProfile = state.profile!;
-  const memorizedVersesCount = state.blocks.reduce((sum, b) => sum + (b.toAyah - b.fromAyah + 1), 0);
-  const quranCompletionPercent = ((memorizedVersesCount / 6236) * 100).toFixed(1);
+  const memorizedVersesCount = state.blocks.reduce((sum, b) => sum + (b.toAyah - b.fromAyah + 1), 0) + (userProfile.previousHifzAyahsCount || 0);
+  const quranCompletionPercent = ((Math.min(memorizedVersesCount, 6236) / 6236) * 100).toFixed(1);
   const totalCompletedReviewsCount = Object.values(state.completedReviews).reduce((sum: number, arr) => sum + (arr as string[]).length, 0);
 
   // Time-based Focus logic
